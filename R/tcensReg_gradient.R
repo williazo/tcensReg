@@ -7,6 +7,7 @@
 #' @param X Numeric design matrix
 #'
 #' @importFrom stats dnorm pnorm
+#' @export
 #'
 #' @return Vector of gradient values with p-1 beta parameters and log sigma for the nth iterate
 

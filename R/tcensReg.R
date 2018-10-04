@@ -11,6 +11,7 @@
 #' @param ... Additional arguments from \code{\link{tcensReg_newton}} such as \code{max_iter}, \code{step_max}, or \code{epsilon}.
 #'
 #' @importFrom stats model.frame model.matrix
+#' @export
 #'
 #' @return Returns a list of final estimate of theta, total number of iterations performed, initial log-likelihood,
 #' final log-likelihood, and estimated variance covariance matrix.

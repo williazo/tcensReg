@@ -6,6 +6,7 @@
 #' @param X Numeric design matrix
 #'
 #' @importFrom stats dnorm pnorm
+#' @export
 #'
 #' @return Matrix of Hessian values for the nth iterate
 

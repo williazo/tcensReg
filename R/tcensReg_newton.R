@@ -10,6 +10,7 @@
 #' @param tol_val Tolerance value used to stop the algorithm if the (n+1) and (n) log likelihood is within the tolerance limit
 #'
 #' @importFrom stats coef dnorm lm model.frame model.matrix pnorm
+#' @export
 #'
 #' @return Returns a list of final estimate of theta, total number of iterations performed, initial log-likelihood,
 #' final log-likelihood, and estimated variance covariance matrix.

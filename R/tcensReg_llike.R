@@ -11,6 +11,7 @@
 #' @param X Numeric design matrix
 #'
 #' @importFrom stats dnorm pnorm
+#' @export
 #'
 #' @return Scalar value of the log-likelihood at the nth iterate
 
