@@ -13,6 +13,7 @@
 #' @importFrom stats model.frame model.matrix
 #' @export
 #'
+#'
 #' @return Returns a list of final estimate of theta, total number of iterations performed, initial log-likelihood,
 #' final log-likelihood, and estimated variance covariance matrix.
 
