@@ -16,7 +16,7 @@
 #' final log-likelihood, and estimated variance covariance matrix.
 
 
-tcensReg_newton<-function(y, X, a = -Inf, v = NULL, epsilon = 1e-4, tol_val = 1e-6, theta_init = NULL, max_iter=100, step_max = 10){
+tcensReg_newton<-function(y, X, a = -Inf, v = NULL, epsilon = 1e-4, tol_val = 1e-6, max_iter=100, step_max = 10, theta_init = NULL){
 
   #starting the iteration counter at one
   i<-1
@@ -30,7 +30,7 @@ tcensReg_newton<-function(y, X, a = -Inf, v = NULL, epsilon = 1e-4, tol_val = 1e
   theta<-theta_init #assigning the inital value for our first iterate
   p <- length(theta) #total number of parameters
   f_0 <- tcensReg_llike(theta, y, X, a, v) #calculating the initial log likelihood value
-  tol_check <- 10 * tol_val #initially setting this value so that the tolerance condition will not be satisfied
+  tol_check <- 10 * tol_val #initially setting this value so that the tolerance condition will not be satisfied (guarantees at least one iteration)
   null_ll <- f_0 #saving this value to be returned at the end
   grad_vec <- tcensReg_gradient(theta, y, X, a, v) #calculating the initial gradient
   ihess_matrix <- solve(tcensReg_hess(theta, y, X, a, v)) #caculating the hessian matrix
@@ -70,7 +70,8 @@ tcensReg_newton<-function(y, X, a = -Inf, v = NULL, epsilon = 1e-4, tol_val = 1e
   #display warning message if the maximum number of iterations is reached
   if(i == max_iter + 1) warning("Maximum iterations reached. Interpret results with caution.", call. = FALSE)
 
-  row.names(theta) <- c(paste0("Beta_", 0:(p-2)),"log_sigma") #adding in variable names
+  row.names(theta) <- c(colnames(X),"log_sigma") #adding in variable names
+  colnames(theta) <- "Estimate"
   row.names(v_cov) <- row.names(theta) #using the names for the variance covariance matrix
   colnames(v_cov) <- row.names(theta)
 
