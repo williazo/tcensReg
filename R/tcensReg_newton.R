@@ -10,6 +10,7 @@
 #' @param tol_val Tolerance value used to stop the algorithm if the (n+1) and (n) log likelihood is within the tolerance limit
 #'
 #' @importFrom stats coef dnorm lm model.frame model.matrix pnorm
+#' @importFrom censReg censReg
 #' @export
 #'
 #' @return Returns a list of final estimate of theta, total number of iterations performed, initial log-likelihood,
@@ -21,11 +22,17 @@ tcensReg_newton<-function(y, X, a = -Inf, v = NULL, epsilon = 1e-4, tol_val = 1e
   #starting the iteration counter at one
   i<-1
 
-  #if inital values are not set up, then use estimates from OLS
-  if(is.null(theta_init)==TRUE){
+  #want to use different inital estimates depending on whether it is truncation only, censor only, or truncated and censored
+  #if censored only, normal, or truncated only then use estimates from OLS
+  if(is.null(theta_init)==TRUE & (a == -Inf & is.null(v) == TRUE) | (a == -Inf & is.null(v) == FALSE) | (a != -Inf & is.null(v) == TRUE)){
     lm_mod <- lm(y ~ X - 1)
     theta_init <- c(unname(coef(lm_mod)), log(unname(summary(lm_mod)$sigma)))
+  }else if(is.null(theta_init)==TRUE & (a != -Inf & is.null(v) == FALSE)){
+    #if censored and truncated then use initial estimates from censored only model
+    cens_mod <- censReg::censReg(y ~ X - 1, left = v)
+    theta_init <- unname(coef(cens_mod))
   }
+
 
   theta<-theta_init #assigning the inital value for our first iterate
   p <- length(theta) #total number of parameters

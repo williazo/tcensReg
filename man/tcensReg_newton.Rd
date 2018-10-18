@@ -5,7 +5,8 @@
 \title{Newton-Raphson Algorithm for Truncated Normal Distribution with Censoring with Linear Equation Mean}
 \usage{
 tcensReg_newton(y, X, a = -Inf, v = NULL, epsilon = 1e-04,
-  tol_val = 1e-06, theta_init = NULL, max_iter = 100, step_max = 10)
+  tol_val = 1e-06, max_iter = 100, step_max = 10,
+  theta_init = NULL)
 }
 \arguments{
 \item{y}{Numeric vector with the observed truncated and censored outcomes}
@@ -20,11 +21,11 @@ tcensReg_newton(y, X, a = -Inf, v = NULL, epsilon = 1e-04,
 
 \item{tol_val}{Tolerance value used to stop the algorithm if the (n+1) and (n) log likelihood is within the tolerance limit}
 
-\item{theta_init}{Initial values of theta provided by the user. If unspecified then calculcates values from OLS regression}
-
 \item{max_iter}{Maximum number of iterations for algorithm. Default is 100}
 
 \item{step_max}{Maximum number of steps when performing line search. Default is 10}
+
+\item{theta_init}{Initial values of theta provided by the user. If unspecified then calculcates values from OLS regression}
 }
 \value{
 Returns a list of final estimate of theta, total number of iterations performed, initial log-likelihood,

@@ -4,7 +4,8 @@
 \alias{tcensReg}
 \title{Regression Method for Truncated Normal Distribution with Censoring}
 \usage{
-tcensReg(formula, a = -Inf, v = NULL, data = sys.frame(sys.parent()), ...)
+tcensReg(formula, a = -Inf, v = NULL, data = sys.frame(sys.parent()),
+  ...)
 }
 \arguments{
 \item{formula}{Object of class \code{formula} which symbolically describes the model to be fit}
