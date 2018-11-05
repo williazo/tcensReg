@@ -23,7 +23,7 @@ tcensReg_llike_sepvar <- function(theta, y, X, group, a = -Inf, v = NULL){
   loglik_components <- rep(NA, num_groups)
   for(j in 1:num_groups){
     y_j <- y[group == unique(group)[j]]
-    X_j <- X[group == unique(group)[j], ]
+    X_j <- as.matrix(X[group == unique(group)[j], ], nrow = length(group == unique(group)[j]), ncol = ncol(X)) #I want to ensure this is still a matrix in order to use the matrix multiplicaiton later
     n_j <- length(y_j) #number of observations in jth group
 
     if(is.null(v)==FALSE){
@@ -34,26 +34,15 @@ tcensReg_llike_sepvar <- function(theta, y, X, group, a = -Inf, v = NULL){
       n_0j <- length(cens) #number of censored observations
       n_1j <- length(uncens) #number of uncensored observations
 
-      if(length(lin_pred) == 1){
-        a_stand <- (a-X_j*lin_pred)/exp(log_sigmas[j]) #standardized value with respect to truncated value
-        v_stand <- (v-X_j*lin_pred)/exp(log_sigmas[j]) #standardized value with respect to censored value
-        y_stand <- (y_j-X_j*lin_pred)/exp(log_sigmas[j])
-      }else{
-        a_stand <- (a-X_j%*%lin_pred)/exp(log_sigmas[j]) #standardized value with respect to truncated value
-        v_stand <- (v-X_j%*%lin_pred)/exp(log_sigmas[j]) #standardized value with respect to censored value
-        y_stand <- (y_j-X_j%*%lin_pred)/exp(log_sigmas[j])
-      }
+      a_stand <- (a-X_j%*%lin_pred)/exp(log_sigmas[j]) #standardized value with respect to truncated value
+      v_stand <- (v-X_j%*%lin_pred)/exp(log_sigmas[j]) #standardized value with respect to censored value
+      y_stand <- (y_j-X_j%*%lin_pred)/exp(log_sigmas[j])
 
       l_lik <- -sum(log(pnorm(-a_stand))) + sum(log(pnorm(v_stand[cens])-pnorm(a_stand[cens]))) - n_1j*log_sigmas[j] + sum(log(dnorm(y_stand[uncens])))
       loglik_components[j] <- l_lik
       }else if(is.null(v)==TRUE){
-        if(length(lin_pred) == 1){
-          a_stand <- (a-X_j*lin_pred)/exp(log_sigmas[j]) #standardized value with respect to truncated value
-          y_stand <- (y_j-X_j*lin_pred)/exp(log_sigmas[j])
-        }else{
-          a_stand <- (a-X_j%*%lin_pred)/exp(log_sigmas[j]) #standardized value with respect to truncated value
-          y_stand <- (y_j-X_j%*%lin_pred)/exp(log_sigma[j])
-        }
+      a_stand <- (a-X_j%*%lin_pred)/exp(log_sigmas[j]) #standardized value with respect to truncated value
+      y_stand <- (y_j-X_j%*%lin_pred)/exp(log_sigma[j])
 
       l_lik <- -sum(log(pnorm(-a_stand))) - n_j*log_sigma + sum(log(dnorm(y_stand)))
       loglik_components[j] <- l_lik
