@@ -7,7 +7,7 @@
 tcensReg_llike(theta, y, X, a = -Inf, v = NULL)
 }
 \arguments{
-\item{theta}{Numeric vector numeric vector containing estimates of beta and log sigma}
+\item{theta}{Numeric vector containing estimates of beta and log sigma}
 
 \item{y}{Numeric vector with the observed truncated and censored outcomes}
 

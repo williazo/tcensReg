@@ -4,7 +4,7 @@
 #' iteration of theta. If \code{a} and/or \code{v} are not specified then the corresponding censored only, truncated only,
 #' or gaussian log likelihood will be used. This function is called as part of the Newton-Raphson algorithm in \code{tcensReg_newton}.
 #'
-#' @param theta Numeric vector numeric vector containing estimates of beta and log sigma
+#' @param theta Numeric vector containing estimates of beta and log sigma
 #' @param a Numeric scalar indicating the truncation value
 #' @param v Numeric scalar indicating the censoring value
 #' @param y Numeric vector with the observed truncated and censored outcomes
