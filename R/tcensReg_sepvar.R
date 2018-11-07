@@ -41,6 +41,9 @@ tcensReg_sepvar <- function(formula, a = -Inf, v = NULL, group_var, data = sys.f
     stop("`a`, and `v` must both be scalars", call. = FALSE)
   }
 
+  if(!group_var%in%names(model.frame(data))){
+    stop("`group_var` must be a variable in the data.frame", call. = FALSE)
+  }
 
   y <- model.frame(formula, data)[, 1]
   group <- data[, group_var]
@@ -48,6 +51,6 @@ tcensReg_sepvar <- function(formula, a = -Inf, v = NULL, group_var, data = sys.f
   #here we have at least some explanatory variables
 
   #reading in the newton raphson for the truncated censored normal
-  results <- tcensReg_newton(y, X, a, v, ...)
+  results <- tcensReg_newton_sepvar(y, X, a, v, group, ...)
   return(results)
 }
