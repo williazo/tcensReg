@@ -2,6 +2,7 @@
 
 export(tcensReg)
 export(tcensReg_gradient)
+export(tcensReg_gradient_sepvar)
 export(tcensReg_hess)
 export(tcensReg_llike)
 export(tcensReg_llike_sepvar)
