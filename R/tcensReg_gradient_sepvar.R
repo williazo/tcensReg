@@ -12,7 +12,7 @@
 #'
 #' @return Vector of gradient values with p-1 beta parameters and log sigma for the nth iterate
 
-tcensReg_gradient_sepvar <- function(theta, y, X, a = -Inf, v = NULL){
+tcensReg_gradient_sepvar <- function(theta, y, X, group, a = -Inf, v = NULL){
 
   nabla <- vector(length = length(theta)) #creating an empty vector to store the gradient
 
