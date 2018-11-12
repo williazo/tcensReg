@@ -1,4 +1,5 @@
 #' Newton-Raphson Algorithm for Truncated Normal Distribution with Censoring with Linear Equation Mean
+#'
 #' @param y Numeric vector with the observed truncated and censored outcomes
 #' @param X Numeric design matrix
 #' @param a Numeric scalar indicating the truncation value. Initial value is -Inf indicating no truncation
