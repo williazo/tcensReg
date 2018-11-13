@@ -24,7 +24,7 @@ final log-likelihood, and estimated variance covariance matrix.
 }
 \description{
 This function is used to find estimates from a linear equation assuming that the data is observed from a truncated
- distribution with left censoring. It uses analytically derived values of the gradient vector and hessian matrix to
- iteratively solve for the maximum likelihood using Newton-Raphson methods with line search. This function can also
+ distribution with left censoring. It uses numerical values of the gradient vector and hessian matrix to
+ solve for the maximum likelihood using \code{maxLik} package. This function can also
  be used with censored only, truncated only, or uncensored and untruncated gaussian models.
 }

@@ -1,8 +1,8 @@
 #' Regression Method for Truncated Normal Distribution with Censoring for Indepentend Truncated Normal Groups
 #'
 #' This function is used to find estimates from a linear equation assuming that the data is observed from a truncated
-#'  distribution with left censoring. It uses analytically derived values of the gradient vector and hessian matrix to
-#'  iteratively solve for the maximum likelihood using Newton-Raphson methods with line search. This function can also
+#'  distribution with left censoring. It uses numerical values of the gradient vector and hessian matrix to
+#'  solve for the maximum likelihood using \code{maxLik} package. This function can also
 #'  be used with censored only, truncated only, or uncensored and untruncated gaussian models.
 #'
 #' @param formula Object of class \code{formula} which symbolically describes the model to be fit
@@ -12,6 +12,7 @@
 #' @param ... Additional arguments from \code{\link{tcensReg_newton}} such as \code{max_iter}, \code{step_max}, or \code{epsilon}.
 #'
 #' @importFrom stats model.frame model.matrix
+#' @importFrom maxLik maxLik
 #' @export
 #'
 #'
@@ -50,7 +51,23 @@ tcensReg_sepvar <- function(formula, a = -Inf, v = NULL, group_var, data = sys.f
   X <- model.matrix(formula, data)
   #here we have at least some explanatory variables
 
+  #want to use different inital estimates depending on whether it is truncation only, censor only, or truncated and censored
+  #if censored only, normal, or truncated only then use estimates from OLS
+  if(is.null(theta_init)==TRUE){
+    lm_mod <- lm(y ~ X - 1)
+    beta_init <- unname(coef(lm_mod))
+
+    num_groups <- length(unique(group))
+    log_sigmas <- vector(length = num_groups)
+    for(j in 1:num_groups){
+      log_sigmas[j] <- log(sd(y[group == unique(group)[j]]))
+    }
+    theta_init <- c(beta_init, log_sigmas)
+  }
+
+  names(theta_init)[1:(length(theta)-length(unique(group)))] <- colnames(X)
+  names(theta_init)[(length(theta)-length(unique(group))+1):length(theta)] <- paste0("log_sigma", 1:length(unique(group)))
   #reading in the newton raphson for the truncated censored normal
-  results <- tcensReg_newton_sepvar(y, X, a, v, group, ...)
+  results <- maxLik::maxLik(tcensReg_llike_sepvar_maxLik, start = theta_init)
   return(results)
 }
