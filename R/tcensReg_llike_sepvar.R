@@ -42,9 +42,9 @@ tcensReg_llike_sepvar <- function(theta, y, X, group, a = -Inf, v = NULL){
       loglik_components[j] <- l_lik
       }else if(is.null(v)==TRUE){
       a_stand <- (a-X_j%*%lin_pred)/exp(log_sigmas[j]) #standardized value with respect to truncated value
-      y_stand <- (y_j-X_j%*%lin_pred)/exp(log_sigma[j])
+      y_stand <- (y_j-X_j%*%lin_pred)/exp(log_sigmas[j])
 
-      l_lik <- -sum(log(pnorm(-a_stand))) - n_j*log_sigma + sum(log(dnorm(y_stand)))
+      l_lik <- -sum(log(pnorm(-a_stand))) - n_j*log_sigmas[j] + sum(log(dnorm(y_stand)))
       loglik_components[j] <- l_lik
     }
   }

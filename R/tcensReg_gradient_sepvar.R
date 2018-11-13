@@ -81,25 +81,51 @@ tcensReg_gradient_sepvar <- function(theta, y, X, group, a = -Inf, v = NULL){
         }
       k <- k + 1
     }
-
   }else if(is.null(v)==TRUE){
-    a_stand <- (a-X%*%theta[1:(p-1)])/exp(log_sigma) #standardized value with respect to truncated value
-    y_stand <- (y-X%*%theta[1:(p-1)])/exp(log_sigma)
-
     #calculating the gradient for each beta parameter
-    for(j in 1:(p-1)){
-      d1 <- sum((-X[,j]*exp(-log_sigma)*dnorm(a_stand))/pnorm(-a_stand))
-      d3 <- sum(X[,j]*exp(-log_sigma)*(y_stand))
-      nabla[j] <- d1 + d3
+    for(j in 1:length(lin_pred)){
+      d1 <- NULL; d2 <- NULL; d3 <- NULL; nabla_jk <- vector(length = num_groups)
+      for(k in 1:num_groups){
+        y_k <- y[group == unique(group)[k]]
+        X_k <- as.matrix(X[group == unique(group)[k],], nrow = length(group == unique(group)[k]), ncol = ncol(X)) #I want to ensure this is still a matrix in order to use the matrix multiplicaiton later
+        X_kj <- as.matrix(X[group == unique(group)[k], j], nrow = length(group == unique(group)[k]), ncol = ncol(X)) #I want to ensure this is still a matrix in order to use the matrix multiplicaiton later
+        n_k <- length(y_k) #number of observations in jth group
+
+
+        a_stand <- (a-X_k%*%lin_pred)/exp(log_sigmas[k]) #standardized value with respect to truncated value
+        y_stand <- (y_k-X_k%*%lin_pred)/exp(log_sigmas[k])
+
+
+        d1 <- sum((-X_kj*exp(-log_sigmas[k])*dnorm(a_stand))/pnorm(-a_stand))
+        d3 <- sum(X_kj*exp(-log_sigmas[k])*(y_stand))
+        nabla_jk[k] <- d1 + d3
+      }
+      nabla[j] <- sum(nabla_jk)
     }
-    if(a == -Inf){
-      d1 <- 0
-    }else{
-      d1 <- sum((-a_stand*dnorm(a_stand))/pnorm(-a_stand))
+
+    k <- 1 #indicator for looping over the groups
+    for(j in (p-num_groups+1):p){ #looping over the sigma parameters
+      y_k <- y[group == unique(group)[k]]
+      X_k <- as.matrix(X[group == unique(group)[k],], nrow = length(group == unique(group)[k]), ncol = ncol(X)) #I want to ensure this is still a matrix in order to use the matrix multiplicaiton later
+      n_k <- length(y_k) #number of observations in jth group
+
+      a_stand <- (a-X_k%*%lin_pred)/exp(log_sigmas[k]) #standardized value with respect to truncated value
+      y_stand <- (y_k-X_k%*%lin_pred)/exp(log_sigmas[k])
+
+      #here we need a special case when there is no truncation (i.e. a = -Inf)
+      if(a == -Inf){
+        d1 <- 0
+        d3 <- n_1k
+        d4 <- sum(y_stand^2)
+        nabla[j] <- d1 - d3 + d4
+      }else{
+        d1 <- sum((-a_stand*dnorm(a_stand))/pnorm(-a_stand))
+        d3 <- n_1k
+        d4 <- sum(y_stand^2)
+        nabla[j] <- d1 - d3 + d4
+      }
+      k <- k + 1
     }
-    d3 <- n
-    d4 <- sum(y_stand^2)
-    nabla[p] <- d1 - d3 + d4
   }
-  return(nabla)
+return(nabla)
 }
