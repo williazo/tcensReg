@@ -24,11 +24,13 @@ y_star <- msm::rtnorm(n = 100, mean = mu, sd = sigma, lower = nu)
 range(y_star) #note that the lowerbound will always be non-negative
 ```
 
-    ## [1] 0.1082646 2.4518047
+    ## [1] 0.03880846 2.15920614
 
-Next, we can imagine a scenario where we have an imprecise measurement of *Y*<sup>\*</sup> leading to values below *a* being censored. We will set *a* = 0.5 in this example creating the random variable *Y*, where
+Next, we can imagine a scenario where we have an imprecise measurement of *Y*<sup>\*</sup> leading to censoring. In our case we assume that values below *a* are censored such that *ν* &lt; *a*. This creates the random variable *Y*, where
 
-*Y*...
+*Y*<sub>*i*</sub> = *ν*(1<sub>{*Y*<sub>*i*</sub><sup>\*</sup> ≤ *ν*}</sub>) + *Y*<sub>*i*</sub><sup>\*</sup>(1 − 1<sub>{*Y*<sub>*i*</sub><sup>\*</sup> ≤ *ν*}</sub>) and 1<sub>{*Y*<sub>*i*</sub><sup>\*</sup> ≤ *ν*}</sub> = 1 is *Y*<sub>*i*</sub><sup>\*</sup> ≤ *ν* and 0 otherwise.
+
+In the example below we set *a* = 0.5.
 
 ``` r
 a <- 0.5
@@ -36,18 +38,25 @@ y <- ifelse(y_star<=a, a, y_star)
 sum(y==a)/length(y) #calculating the number of censored observations
 ```
 
-    ## [1] 0.28
+    ## [1] 0.21
+
+``` r
+dt <- data.frame(y_star, y) #collecting the uncensored and censored data together
+```
+
+We can observe the histogram and density plot for the uncensored data, which shows the zero-truncation.
+
+    ## Loading required package: viridisLite
+
+    ## Warning: Ignoring unknown parameters: binwidth
+
+![](README_files/figure-markdown_github/unnamed-chunk-3-1.png)
 
 Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
 
 ``` r
-#installing the package for estimating truncated with censoring from the GitHub page
-devtools::install_github("williazo/tcensReg") 
-```
+#uncomment the line below if installing the package for estimating truncated with censoring from the GitHub page for the first time
+#devtools::install_github("williazo/tcensReg") 
 
-    ## Skipping install of 'tcensReg' from a github remote, the SHA1 (8248f1dc) has not changed since last install.
-    ##   Use `force = TRUE` to force installation
-
-``` r
 library(tcensReg)  #loading the package into the current environment
 ```

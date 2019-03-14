@@ -29,25 +29,39 @@ y_star <- msm::rtnorm(n = 100, mean = mu, sd = sigma, lower = nu)
 range(y_star) #note that the lowerbound will always be non-negative
 ```
 
-Next, we can imagine a scenario where we have an imprecise measurement of $Y^{*}$ leading to values below $a$ being censored. We will set $a=0.5$ in this example creating the random variable $Y$, where
+Next, we can imagine a scenario where we have an imprecise measurement of $Y^{*}$ leading to censoring. In our case we assume that values below $a$ are censored such that $\nu<a$. This creates the random variable $Y$, where
 
-$\begin{equation}Y\end{equation}$...
+$Y_{i}=\nu\big(1_{\{Y_{i}^{*}\le\nu\}}\big)+Y_{i}^{*}\big(1-1_{\{Y_{i}^{*}\le\nu\}}\big)$ and $1_{\{Y_{i}^{*}\le\nu\}}=1$ is $Y_{i}^{*}\le\nu$ and 0 otherwise.
 
+In the example below we set $a=0.5$.
 ```{r}
 a <- 0.5
 y <- ifelse(y_star<=a, a, y_star)
 sum(y==a)/length(y) #calculating the number of censored observations
+dt <- data.frame(y_star, y) #collecting the uncensored and censored data together
+
 ```
 
-
+We can observe the histogram and density plot for the uncensored data, which shows the zero-truncation.
 ```{r echo=FALSE}
 library(ggplot2)
+library(viridis)
+ggplot(data = dt, aes(x = y_star, y = ..density..))+
+  geom_histogram(binwidth = 0.3, col = viridis(1),fill = viridis(1), alpha = 0.6)+
+  stat_density(binwidth = 0.3, col = viridis(1), fill = viridis(1), alpha = 0.3)+
+  ylab("Density")+
+    theme(axis.ticks.y = element_blank(), axis.text.y = element_blank(), panel.grid.major = element_blank(), 
+        panel.background = element_blank(), panel.border = element_rect(fill = NA, color = "black"),
+        axis.text.x = element_text(size = 10), legend.title = element_text(size = 15),
+        legend.text = element_text(size = 15),  legend.key.width = unit(15, units = "mm"), strip.text = element_text(size = 20),
+        axis.title = element_text(size = 20))
 ```
 
 Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
 
 ```{r}
-#installing the package for estimating truncated with censoring from the GitHub page
-devtools::install_github("williazo/tcensReg") 
+#uncomment the line below if installing the package for estimating truncated with censoring from the GitHub page for the first time
+#devtools::install_github("williazo/tcensReg") 
+
 library(tcensReg)  #loading the package into the current environment
 ```
