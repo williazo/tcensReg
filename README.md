@@ -10,53 +10,107 @@ Some common examples where this type of problem may arise is when there is a nat
 
 Assume that we have observations from an underlying truncated normal distribution
 
-*Y*<sup>\*</sup> ∼ TN(*μ*, *σ*<sup>2</sup>, *ν*),
+*Y*<sup>\*</sup> ∼ TN(*μ*, *σ*<sup>2</sup>, *a*),
 
-where *ν* denotes the value of the left-truncation. In our case we will assume a zero-truncated model by setting *ν* = 0.
+where *a* denotes the value of the left-truncation. In our case we will assume a zero-truncated model by setting *a* = 0.
 
 ``` r
 library(msm) #we will use this package to generate random values from the truncated normal distribution
-mu <- 0.8
+mu <- 0.5
 sigma <- 0.5
-nu <- 0
+a <- 0
 
-y_star <- msm::rtnorm(n = 100, mean = mu, sd = sigma, lower = nu)
+y_star <- msm::rtnorm(n = 1000, mean = mu, sd = sigma, lower = a)
 range(y_star) #note that the lowerbound will always be non-negative
 ```
 
-    ## [1] 0.03880846 2.15920614
+    ## [1] 0.005998321 2.270648996
 
-Next, we can imagine a scenario where we have an imprecise measurement of *Y*<sup>\*</sup> leading to censoring. In our case we assume that values below *a* are censored such that *ν* &lt; *a*. This creates the random variable *Y*, where
+Next, we can imagine a scenario where we have an imprecise measurement of *Y*<sup>\*</sup> leading to censoring. In our case we assume that values below *ν* are censored such that *a* &lt; *ν*. This creates the random variable *Y*, where
 
 *Y*<sub>*i*</sub> = *ν*(1<sub>{*Y*<sub>*i*</sub><sup>\*</sup> ≤ *ν*}</sub>) + *Y*<sub>*i*</sub><sup>\*</sup>(1 − 1<sub>{*Y*<sub>*i*</sub><sup>\*</sup> ≤ *ν*}</sub>) and 1<sub>{*Y*<sub>*i*</sub><sup>\*</sup> ≤ *ν*}</sub> = 1 is *Y*<sub>*i*</sub><sup>\*</sup> ≤ *ν* and 0 otherwise.
 
-In the example below we set *a* = 0.5.
+In the example below we set *ν* = 0.25.
 
 ``` r
-a <- 0.5
-y <- ifelse(y_star<=a, a, y_star)
-sum(y==a)/length(y) #calculating the number of censored observations
+nu <- 0.25
+y <- ifelse(y_star<=nu, nu, y_star)
+sum(y==nu)/length(y) #calculating the number of censored observations
 ```
 
-    ## [1] 0.21
+    ## [1] 0.186
 
 ``` r
 dt <- data.frame(y_star, y) #collecting the uncensored and censored data together
 ```
 
-We can observe the histogram and density plot for the uncensored data, which shows the zero-truncation.
+We can observe the histogram and density plot for the uncensored data, which shows the zero-truncation. ![](README_files/figure-markdown_github/unnamed-chunk-3-1.png)
 
-    ## Loading required package: viridisLite
+We can then compare this to the censored observations below ![](README_files/figure-markdown_github/unnamed-chunk-4-1.png)
 
-    ## Warning: Ignoring unknown parameters: binwidth
-
-![](README_files/figure-markdown_github/unnamed-chunk-3-1.png)
-
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+We can then estimate *μ* and *σ* using our observed *Y* values with the `tcensReg` package as shown below.
 
 ``` r
-#uncomment the line below if installing the package for estimating truncated with censoring from the GitHub page for the first time
-#devtools::install_github("williazo/tcensReg") 
-
+#installing the package for estimating truncated with censoring from the GitHub page
+devtools::install_github("williazo/tcensReg")
 library(tcensReg)  #loading the package into the current environment
+tcensReg(y ~ 1, data = dt, a = 0, v = 0.25)
 ```
+
+    ## $theta
+    ##               Estimate
+    ## (Intercept)  0.4664344
+    ## log_sigma   -0.6713109
+    ## 
+    ## $iterations
+    ## [1] 5
+    ## 
+    ## $initial_ll
+    ## [1] -677.3942
+    ## 
+    ## $final_ll
+    ## [1] -660.4865
+    ## 
+    ## $var_cov
+    ##              (Intercept)    log_sigma
+    ## (Intercept)  0.001022383 -0.001003465
+    ## log_sigma   -0.001003465  0.001714552
+
+Note that the this will return parameter estimates, variance-covariance matrix, the number of iterations until convergence, and the initial/final log-likelihood values.
+
+Comparing the values to the truth we see that the estimates are unbiased.
+
+``` r
+output <- tcensReg(y ~ 1, data = dt, a = a, v = nu)
+lm_output <- lm(y ~ 1, data = dt) #running OLS model for comparison
+cens_output <- tcensReg(y ~ 1, data = dt, v = nu) #censored only model, i.e., Tobit model
+```
+
+    ## Warning: `a` is not specified indicating no truncation
+
+``` r
+tcensReg_est <- output$theta #extracting the point estimates
+tcensReg_est[2] <- exp(tcensReg_est[2]) #exponentiating the estimate of log_sigma to estimate sigma
+
+lm_est <- c(coef(lm_output), summary(lm_output)$sigma)
+
+cens_est <- cens_output$theta
+cens_est[2] <- exp(cens_est[2])
+
+results_df <- data.frame(rbind(c(mu, sigma), t(tcensReg_est), lm_est, t(cens_est)))
+names(results_df) <- c("mu$", "sigma")
+row.names(results_df) <- c("Truth", "tcensReg", "Normal MLE", "Tobit")
+results_df$mu_bias <- abs(results_df$mu - mu)
+results_df$sigma_bias <- abs(results_df$sigma - sigma)
+
+knitr::kable(results_df, format = "markdown", digits = 4)
+```
+
+|            |     mu$|   sigma|  mu\_bias|  sigma\_bias|
+|:-----------|-------:|-------:|---------:|------------:|
+| Truth      |  0.5000|  0.5000|    0.0000|       0.0000|
+| tcensReg   |  0.4664|  0.5110|    0.0336|       0.0110|
+| Normal MLE |  0.6525|  0.3702|    0.1525|       0.1298|
+| Tobit      |  0.6067|  0.4369|    0.1067|       0.0631|
+
+Other methods result in significant bias for both *μ* and *σ*.
