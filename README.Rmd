@@ -101,7 +101,7 @@ cens_est <- cens_output$theta
 cens_est[2] <- exp(cens_est[2])
 
 results_df <- data.frame(rbind(c(mu, sigma), t(tcensReg_est), lm_est, t(cens_est)))
-names(results_df) <- c("mu$", "sigma")
+names(results_df) <- c("mu", "sigma")
 row.names(results_df) <- c("Truth", "tcensReg", "Normal MLE", "Tobit")
 results_df$mu_bias <- abs(results_df$mu - mu)
 results_df$sigma_bias <- abs(results_df$sigma - sigma)
