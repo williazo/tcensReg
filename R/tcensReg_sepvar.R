@@ -19,7 +19,7 @@
 #' @return Returns a list of final estimate of theta, total number of iterations performed, initial log-likelihood,
 #' final log-likelihood, and estimated variance covariance matrix.
 
-tcensReg_sepvar <- function(formula, a = -Inf, v = NULL, group_var, data = sys.frame(sys.parent()), ...){
+tcensReg_sepvar <- function(formula, a = -Inf, v = NULL, group_var, theta_init = NULL, data = sys.frame(sys.parent()), ...){
 
   #checks for proper specification of formula
   if(class(formula)!= "formula"){
