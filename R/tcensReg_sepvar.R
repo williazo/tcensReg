@@ -65,8 +65,8 @@ tcensReg_sepvar <- function(formula, a = -Inf, v = NULL, group_var, theta_init =
     theta_init <- c(beta_init, log_sigmas)
   }
 
-  names(theta_init)[1:(length(theta)-length(unique(group)))] <- colnames(X)
-  names(theta_init)[(length(theta)-length(unique(group))+1):length(theta)] <- paste0("log_sigma", 1:length(unique(group)))
+  names(theta_init)[1:(length(theta_init)-length(unique(group)))] <- colnames(X)
+  names(theta_init)[(length(theta_init)-length(unique(group))+1):length(theta_init)] <- paste0("log_sigma", 1:length(unique(group)))
   #reading in the newton raphson for the truncated censored normal
   results <- maxLik::maxLik(tcensReg_llike_sepvar_maxLik, start = theta_init)
   return(results)
