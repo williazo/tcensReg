@@ -9,7 +9,7 @@ knitr::opts_chunk$set(echo = TRUE)
 
 The goal of this package is to estimate parameters from a linear model when the data comes from a truncated normal distribution with censoring. Maximum likelihood values are returned derived from Newton-Raphson algorithm using analytic values of the gradient and hessian. This package is also able to return maximum likelihood estimates for truncated only or censored only data similar to `truncreg` and `censReg` packages.
 
-## Example
+# Example 1: Single Population
 
 Some common examples where this type of problem may arise is when there is a natural truncation imposed by the structure of the data. For instance several applications have an implied zero truncation such as product lifetimes, age, or detection thresholds. To show how to implement the functions within the package, I will demonstrate a simple simulation example.
 
@@ -109,3 +109,4 @@ results_df$sigma_bias <- abs(results_df$sigma - sigma)
 knitr::kable(results_df, format = "markdown", digits = 4)
 ```
 Other methods result in significant bias for both $\mu$ and $\sigma$.
+

@@ -3,8 +3,8 @@ tcensReg: Maximum Likelihood Estimation of a Truncated Normal Distribution with 
 
 The goal of this package is to estimate parameters from a linear model when the data comes from a truncated normal distribution with censoring. Maximum likelihood values are returned derived from Newton-Raphson algorithm using analytic values of the gradient and hessian. This package is also able to return maximum likelihood estimates for truncated only or censored only data similar to `truncreg` and `censReg` packages.
 
-Example
--------
+Example 1: Single Population
+============================
 
 Some common examples where this type of problem may arise is when there is a natural truncation imposed by the structure of the data. For instance several applications have an implied zero truncation such as product lifetimes, age, or detection thresholds. To show how to implement the functions within the package, I will demonstrate a simple simulation example.
 
@@ -24,7 +24,7 @@ y_star <- msm::rtnorm(n = 1000, mean = mu, sd = sigma, lower = a)
 range(y_star) #note that the lowerbound will always be non-negative
 ```
 
-    ## [1] 0.0007457189 1.9384400204
+    ## [1] 0.001320691 2.117717566
 
 Next, we can imagine a scenario where we have an imprecise measurement of *Y*<sup>\*</sup> leading to censoring. In our case we assume that values below *ν* are censored such that *a* &lt; *ν*. This creates the random variable *Y*, where
 
@@ -38,7 +38,7 @@ y <- ifelse(y_star<=nu, nu, y_star)
 sum(y==nu)/length(y) #calculating the number of censored observations
 ```
 
-    ## [1] 0.175
+    ## [1] 0.195
 
 ``` r
 dt <- data.frame(y_star, y) #collecting the uncensored and censored data together
@@ -58,23 +58,23 @@ tcensReg(y ~ 1, data = dt, a = 0, v = 0.25)
 ```
 
     ## $theta
-    ##               Estimate
-    ## (Intercept)  0.5204241
-    ## log_sigma   -0.7143395
+    ##              Estimate
+    ## (Intercept)  0.456453
+    ## log_sigma   -0.656933
     ## 
     ## $iterations
     ## [1] 5
     ## 
     ## $initial_ll
-    ## [1] -665.1048
+    ## [1] -693.4906
     ## 
     ## $final_ll
-    ## [1] -652.3394
+    ## [1] -676.2003
     ## 
     ## $var_cov
-    ##               (Intercept)     log_sigma
-    ## (Intercept)  0.0007312177 -0.0007343165
-    ## log_sigma   -0.0007343165  0.0014999973
+    ##              (Intercept)    log_sigma
+    ## (Intercept)  0.001114356 -0.001079524
+    ## log_sigma   -0.001079524  0.001767558
 
 Note that the this will return parameter estimates, variance-covariance matrix, the number of iterations until convergence, and the initial/final log-likelihood values.
 
@@ -109,8 +109,8 @@ knitr::kable(results_df, format = "markdown", digits = 4)
 |            |      mu|   sigma|  mu\_bias|  sigma\_bias|
 |:-----------|-------:|-------:|---------:|------------:|
 | Truth      |  0.5000|  0.5000|    0.0000|       0.0000|
-| tcensReg   |  0.5204|  0.4895|    0.0204|       0.0105|
-| Normal MLE |  0.6704|  0.3681|    0.1704|       0.1319|
-| Tobit      |  0.6290|  0.4303|    0.1290|       0.0697|
+| tcensReg   |  0.4565|  0.5184|    0.0435|       0.0184|
+| Normal MLE |  0.6527|  0.3716|    0.1527|       0.1284|
+| Tobit      |  0.6038|  0.4425|    0.1038|       0.0575|
 
 Other methods result in significant bias for both *μ* and *σ*.
