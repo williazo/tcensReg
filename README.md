@@ -1,6 +1,16 @@
 tcensReg: Maximum Likelihood Estimation of a Truncated Normal Distribution with Censored Data
 ================
 
+Installation
+============
+
+You can install ggplot.spaghetti from github via the devtools package with:
+
+``` r
+install.packages("devtools")
+devtools::install_github("williazo/tcensReg")
+```
+
 The goal of this package is to estimate parameters from a linear model when the data comes from a truncated normal distribution with censoring. Maximum likelihood values are returned derived from Newton-Raphson algorithm using analytic values of the gradient and hessian. This package is also able to return maximum likelihood estimates for truncated only or censored only data similar to `truncreg` and `censReg` packages.
 
 Example 1: Single Population
@@ -24,7 +34,7 @@ y_star <- msm::rtnorm(n = 1000, mean = mu, sd = sigma, lower = a)
 range(y_star) #note that the lowerbound will always be non-negative
 ```
 
-    ## [1] 0.001320691 2.117717566
+    ## [1] 0.003172046 2.267302667
 
 Next, we can imagine a scenario where we have an imprecise measurement of *Y*<sup>\*</sup> leading to censoring. In our case we assume that values below *ν* are censored such that *a* &lt; *ν*. This creates the random variable *Y*, where
 
@@ -38,15 +48,15 @@ y <- ifelse(y_star<=nu, nu, y_star)
 sum(y==nu)/length(y) #calculating the number of censored observations
 ```
 
-    ## [1] 0.195
+    ## [1] 0.19
 
 ``` r
 dt <- data.frame(y_star, y) #collecting the uncensored and censored data together
 ```
 
-We can observe the histogram and density plot for the uncensored data, which shows the zero-truncation. ![](README_files/figure-markdown_github/unnamed-chunk-3-1.png)
+We can observe the histogram and density plot for the uncensored data, which shows the zero-truncation. ![](README_files/figure-markdown_github/unnamed-chunk-4-1.png)
 
-We can then compare this to the censored observations below ![](README_files/figure-markdown_github/unnamed-chunk-4-1.png)
+We can then compare this to the censored observations below ![](README_files/figure-markdown_github/unnamed-chunk-5-1.png)
 
 We can then estimate *μ* and *σ* using our observed *Y* values with the `tcensReg` package as shown below.
 
@@ -58,23 +68,23 @@ tcensReg(y ~ 1, data = dt, a = 0, v = 0.25)
 ```
 
     ## $theta
-    ##              Estimate
-    ## (Intercept)  0.456453
-    ## log_sigma   -0.656933
+    ##               Estimate
+    ## (Intercept)  0.4593105
+    ## log_sigma   -0.6571962
     ## 
     ## $iterations
     ## [1] 5
     ## 
     ## $initial_ll
-    ## [1] -693.4906
+    ## [1] -688.4683
     ## 
     ## $final_ll
-    ## [1] -676.2003
+    ## [1] -670.9826
     ## 
     ## $var_cov
     ##              (Intercept)    log_sigma
-    ## (Intercept)  0.001114356 -0.001079524
-    ## log_sigma   -0.001079524  0.001767558
+    ## (Intercept)  0.001101412 -0.001066858
+    ## log_sigma   -0.001066858  0.001756521
 
 Note that the this will return parameter estimates, variance-covariance matrix, the number of iterations until convergence, and the initial/final log-likelihood values.
 
@@ -109,8 +119,8 @@ knitr::kable(results_df, format = "markdown", digits = 4)
 |            |      mu|   sigma|  mu\_bias|  sigma\_bias|
 |:-----------|-------:|-------:|---------:|------------:|
 | Truth      |  0.5000|  0.5000|    0.0000|       0.0000|
-| tcensReg   |  0.4565|  0.5184|    0.0435|       0.0184|
-| Normal MLE |  0.6527|  0.3716|    0.1527|       0.1284|
-| Tobit      |  0.6038|  0.4425|    0.1038|       0.0575|
+| tcensReg   |  0.4593|  0.5183|    0.0407|       0.0183|
+| Normal MLE |  0.6537|  0.3727|    0.1537|       0.1273|
+| Tobit      |  0.6063|  0.4416|    0.1063|       0.0584|
 
 Other methods result in significant bias for both *μ* and *σ*.

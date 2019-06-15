@@ -5,6 +5,15 @@ output: github_document
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
+chooseCRANmirror(graphics=FALSE, ind=1)
+```
+
+# Installation
+You can install ggplot.spaghetti from github via the devtools package with:
+
+```{r eval=FALSE}
+install.packages("devtools")
+devtools::install_github("williazo/tcensReg")
 ```
 
 The goal of this package is to estimate parameters from a linear model when the data comes from a truncated normal distribution with censoring. Maximum likelihood values are returned derived from Newton-Raphson algorithm using analytic values of the gradient and hessian. This package is also able to return maximum likelihood estimates for truncated only or censored only data similar to `truncreg` and `censReg` packages.
