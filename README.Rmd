@@ -5,7 +5,6 @@ output: github_document
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
-chooseCRANmirror(graphics=FALSE, ind=1)
 ```
 
 The goal of this package is to estimate parameters from a linear model when the data comes from a truncated normal distribution with censoring. Maximum likelihood values are returned derived from Newton-Raphson algorithm using analytic values of the gradient and hessian. This package is also able to return maximum likelihood estimates for truncated only or censored only data similar to `truncreg` and `censReg` packages.
@@ -88,8 +87,6 @@ ggplot(data = dt, aes(x = y, y = ..density..))+
 
 We can then estimate $\mu$ and $\sigma$ using our observed $Y$ values with the `tcensReg` package as shown below.
 ```{r message = FALSE}
-#installing the package for estimating truncated with censoring from the GitHub page
-devtools::install_github("williazo/tcensReg")
 library(tcensReg)  #loading the package into the current environment
 tcensReg(y ~ 1, data = dt, a = 0, v = 0.25)
 ```

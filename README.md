@@ -34,7 +34,7 @@ y_star <- msm::rtnorm(n = 1000, mean = mu, sd = sigma, lower = a)
 range(y_star) #note that the lowerbound will always be non-negative
 ```
 
-    ## [1] 0.001470623 2.120925731
+    ## [1] 0.001101319 2.071706840
 
 Next, we can imagine a scenario where we have an imprecise measurement of *Y*<sup>\*</sup> leading to censoring. In our case we assume that values below *ν* are censored such that *a* &lt; *ν*. This creates the random variable *Y*, where
 
@@ -48,7 +48,7 @@ y <- ifelse(y_star<=nu, nu, y_star)
 sum(y==nu)/length(y) #calculating the number of censored observations
 ```
 
-    ## [1] 0.207
+    ## [1] 0.162
 
 ``` r
 dt <- data.frame(y_star, y) #collecting the uncensored and censored data together
@@ -61,59 +61,28 @@ We can then compare this to the censored observations below ![](README_files/fig
 We can then estimate *μ* and *σ* using our observed *Y* values with the `tcensReg` package as shown below.
 
 ``` r
-#installing the package for estimating truncated with censoring from the GitHub page
-devtools::install_github("williazo/tcensReg")
-```
-
-    ##   
-       checking for file ‘/private/var/folders/wr/vwwq0yqx6232hvq5f300tln80000gp/T/RtmpGqL7C1/remotes48ed5179fa/williazo-tcensReg-6f81109/DESCRIPTION’ ...
-      
-    ✔  checking for file ‘/private/var/folders/wr/vwwq0yqx6232hvq5f300tln80000gp/T/RtmpGqL7C1/remotes48ed5179fa/williazo-tcensReg-6f81109/DESCRIPTION’
-    ## 
-      
-    ─  preparing ‘tcensReg’:
-    ## 
-      
-       checking DESCRIPTION meta-information ...
-      
-    ✔  checking DESCRIPTION meta-information
-    ## 
-      
-    ─  checking for LF line-endings in source and make files and shell scripts
-    ## 
-      
-    ─  checking for empty or unneeded directories
-    ## 
-      
-    ─  building ‘tcensReg_0.0.0.9000.tar.gz’
-    ## 
-      
-       
-    ## 
-
-``` r
 library(tcensReg)  #loading the package into the current environment
 tcensReg(y ~ 1, data = dt, a = 0, v = 0.25)
 ```
 
     ## $theta
     ##               Estimate
-    ## (Intercept)  0.4583995
-    ## log_sigma   -0.6398455
+    ## (Intercept)  0.5293758
+    ## log_sigma   -0.7188691
     ## 
     ## $iterations
     ## [1] 5
     ## 
     ## $initial_ll
-    ## [1] -722.6784
+    ## [1] -650.1115
     ## 
     ## $final_ll
-    ## [1] -706.039
+    ## [1] -637.1345
     ## 
     ## $var_cov
-    ##              (Intercept)    log_sigma
-    ## (Intercept)  0.001177763 -0.001122155
-    ## log_sigma   -0.001122155  0.001788239
+    ##               (Intercept)     log_sigma
+    ## (Intercept)  0.0006970955 -0.0006984901
+    ## log_sigma   -0.0006984901  0.0014663579
 
 Note that the this will return parameter estimates, variance-covariance matrix, the number of iterations until convergence, and the initial/final log-likelihood values.
 
@@ -148,8 +117,8 @@ knitr::kable(results_df, format = "markdown", digits = 4)
 |            |      mu|   sigma|  mu\_bias|  sigma\_bias|
 |:-----------|-------:|-------:|---------:|------------:|
 | Truth      |  0.5000|  0.5000|    0.0000|       0.0000|
-| tcensReg   |  0.4584|  0.5274|    0.0416|       0.0274|
-| Normal MLE |  0.6615|  0.3754|    0.1615|       0.1246|
-| Tobit      |  0.6081|  0.4530|    0.1081|       0.0470|
+| tcensReg   |  0.5294|  0.4873|    0.0294|       0.0127|
+| Normal MLE |  0.6733|  0.3703|    0.1733|       0.1297|
+| Tobit      |  0.6356|  0.4272|    0.1356|       0.0728|
 
 Other methods result in significant bias for both *μ* and *σ*.
