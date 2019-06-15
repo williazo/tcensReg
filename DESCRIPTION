@@ -7,6 +7,7 @@ Authors@R:
            email = "williazo@ucla.edu", role = c("aut", "cre"))
 Description: Implements a Newton-Raphson algorithm to find maximum likelihood estimates for a linear equation using analytical values of the gradient and hessian.
 Depends: R (>= 3.3)
+Imports: censReg, maxLik
 License: MIT + file LICENSE
 Encoding: UTF-8
 LazyData: true
