@@ -5,7 +5,7 @@
 \title{Regression Method for Truncated Normal Distribution with Censoring for Indepentend Truncated Normal Groups}
 \usage{
 tcensReg_sepvar(formula, a = -Inf, v = NULL, group_var,
-  data = sys.frame(sys.parent()), ...)
+  theta_init = NULL, data = sys.frame(sys.parent()), ...)
 }
 \arguments{
 \item{formula}{Object of class \code{formula} which symbolically describes the model to be fit}

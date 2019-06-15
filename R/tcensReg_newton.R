@@ -10,6 +10,7 @@
 #' @param step_max Maximum number of steps when performing line search. Default is 10
 #' @param tol_val Tolerance value used to stop the algorithm if the (n+1) and (n) log likelihood is within the tolerance limit
 #'
+#' @import censReg
 #' @importFrom stats coef dnorm lm model.frame model.matrix pnorm
 #' @importFrom censReg censReg
 #' @export
