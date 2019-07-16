@@ -1,16 +1,16 @@
 #################################
 ## Estimating Non-Inferiority Type I Error Rates for Difference in Means with Left Censored Data underlying Truncated Normal
-## Version 1.2
+## Version 1.3
 ## Created by:  Justin Williams
 ##              Alcon Intern, R&D
 ## Produced:    July-August 2018
 #################################
 #installing and loading the needed packages
-list.of.packages <- c("msm", "devtools", "tictoc")
+list.of.packages <- c("msm", "devtools", "tictoc", "parallel")
 new.packages <- list.of.packages[!(list.of.packages %in% installed.packages()[,"Package"])]
 if(length(new.packages)) install.packages(new.packages)
 lapply(list.of.packages, require, character.only = T)
-rm(new.packages, list.of.packages) 
+rm(new.packages, list.of.packages)
 
 #installing the package for estimating truncated with censoring from GitHub page
 devtools::install_github("williazo/tcensReg")
@@ -23,7 +23,7 @@ cens_method <- function(x, method, tobit_val){
   } else if (method == "DL_half"){
     ifelse(x < 0.61, 0.305, x)
   } else if (method == "Tobit"){
-    ifelse(x < 0.61, tobit_val, x) 
+    ifelse(x < 0.61, tobit_val, x)
     #want close to 0.61 since in the real data will not be able to distinguish from 0 and -1 otherwise
     #rather than using arbitrarily precise number it is easier to detect trend using 0.60
   }
@@ -40,7 +40,7 @@ cens_diff_sim_noninf <- function(rand_seed, mu1_vec, non_inf_margin, sd_vec, n1,
   # tobit_val : scalar numeric value indicating the tobit threshold value where censoring is occuring
   # a         : scalar numeric value indicating the truncation value
   # alpha     : scalar numeric value used to set the Type I probability for the non-inferiority test. Error rate should be alpha/2
-  
+
   #setting the intercept mean to be the mean of the first population
   beta_0 <- mu1_vec
   true_diff <- non_inf_margin
@@ -55,9 +55,9 @@ cens_diff_sim_noninf <- function(rand_seed, mu1_vec, non_inf_margin, sd_vec, n1,
   beta <- cbind(beta_0 = beta_0, beta_1 = true_diff)
   # Xb <- X%*%t(beta)
   # max_trunc_prob <- pnorm(a, mean = min(mu2_vec), sd = max(sd_vec), lower.tail = TRUE)
-  
+
   set.seed(rand_seed)
-  ls_dt <-lapply(1:B, function(num_reps){ #looping the function over the number of replicates
+  ls_dt <-parallel::mclapply(1:B, function(num_reps){ #looping the function over the number of replicates
     lapply(sd_vec, function(s){ #applying over the number of different standard deviation values
       lapply(1:nrow(beta), function(x){ #each row of beta matrix represents a unique mu1, mu2 combination
         y_star_1 <- msm::rtnorm(n = n1, mean = unname(beta[x, 1]), sd = s, lower = a) #oversampling from a normal distribution
@@ -70,7 +70,7 @@ cens_diff_sim_noninf <- function(rand_seed, mu1_vec, non_inf_margin, sd_vec, n1,
         group <- c(rep(0, n1), rep(1, n2))
         data.frame(y_star, y_dl, y_dl_half, y_tobit, cens_ind, group)
       })})})
-  dt <- array(unlist(ls_dt), dim = c(n1+n2, 6, nrow(beta), num_sd, B), 
+  dt <- array(unlist(ls_dt), dim = c(n1+n2, 6, nrow(beta), num_sd, B),
               dimnames = list(NULL, c("y_star","y_dl", "y_dl_half", "y_tobit", "cens_ind", "group"), NULL, NULL, NULL))
   #dt is a large array containing all of the different vector values
   #dimensions are (n1+n2) x dt_vars x num_mu_combo x num_sd x num_reps
@@ -79,7 +79,7 @@ cens_diff_sim_noninf <- function(rand_seed, mu1_vec, non_inf_margin, sd_vec, n1,
   #dimension three is the number of different mu combinations. This is equal to length(mu1_vec)
   #dimension four is the number of standard deviation values
   #dimension five is the total number of replicates
-  
+
   #### Calculate Censoring Percentage #####
   #calculate the percent censoring within each group over the number of mu combinations, sd combinations, and number of replicates
   prop_cens_rep <- apply(dt, c(3, 4, 5), function(X){
@@ -87,18 +87,18 @@ cens_diff_sim_noninf <- function(rand_seed, mu1_vec, non_inf_margin, sd_vec, n1,
     cens_tbl <- round(prop.table(table(df$cens_ind, df$group), 2), 4)
     return(cens_tbl)
   })
-  
+
   #averaging the censoring results over the number of replicates
   prop_cens <- apply(prop_cens_rep[c(2,4),,,], c(1,2,3), mean)
   row.names(prop_cens) <- c("Group_1", "Group_2")
-  percent_cens <- data.frame(cbind(t(matrix(prop_cens, nrow = 2, ncol = num_mu1 * num_sd, dimnames = list(paste0(c("Group_1", "Group_2"), "_pctcens"), NULL))), 
+  percent_cens <- data.frame(cbind(t(matrix(prop_cens, nrow = 2, ncol = num_mu1 * num_sd, dimnames = list(paste0(c("Group_1", "Group_2"), "_pctcens"), NULL))),
                                    beta_0 = mu1_vec,
                                    beta_1 = true_diff,
                                    sd = rep(sd_vec, each = num_mu1)))
   percent_cens$mu1 <- percent_cens$beta_0
   percent_cens$mu2 <- percent_cens$beta_0 + percent_cens$beta_1
   percent_cens$delta <- percent_cens$beta_1
-  
+
   #calculating the censoring percentage for each scenario
   writeLines("^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^")
   writeLines("Censoring Percentage")
@@ -106,7 +106,7 @@ cens_diff_sim_noninf <- function(rand_seed, mu1_vec, non_inf_margin, sd_vec, n1,
   print(round(percent_cens, 4))
   writeLines("")
   writeLines("")
-  
+
   ##### Estimating the Parameters for each of the Six Methods
   method_names <- c("Uncens_NT", "GS", "DL", "DL_half", "Tobit", "tcensReg")
   param_rep <- apply(dt, c(3, 4, 5), function(dt_X){
@@ -121,24 +121,24 @@ cens_diff_sim_noninf <- function(rand_seed, mu1_vec, non_inf_margin, sd_vec, n1,
       tobit_mod <- lm(y_tobit ~ group, data = df)
       tobit_diff <- coef(tobit_mod)["group"]
       tobit_sd <- summary(tobit_mod)$sigma
-      
+
       #if there are no censored observations then a truncated regression should be run
       tcensReg_mod <- tcensReg(y_tobit ~ group, data = df, a = a)
       tcensReg_diff <- tcensReg_mod$theta[2]
       tcensReg_sd <- exp(tcensReg_mod$theta[3])
-      
+
     } else{
       #note that for censReg it returns an estimate of the log_sd since it calculates the score equations with respect to this parameter
       tobit_mod <- tcensReg(y_tobit ~ group, data = df, v = tobit_val)
       tobit_diff <- tobit_mod$theta[2]
       tobit_sd <- exp(tobit_mod$theta[3])
-      
+
       tcensReg_mod <- tcensReg(y_tobit ~ group, a = a, v = tobit_val, data = df)
       tcensReg_diff <- tcensReg_mod$theta[2]
       tcensReg_sd <- exp(tcensReg_mod$theta[3])
     }
-    
-    
+
+
     #difference estimates
     comp_diff <- coef(comp_mod)[2]
     dl_diff <- coef(dl_mod)[2]
@@ -146,7 +146,7 @@ cens_diff_sim_noninf <- function(rand_seed, mu1_vec, non_inf_margin, sd_vec, n1,
     # comp_trunc_diff <- comp_trunc_mod$theta[2]
     comp_trunc_diff <- coef(comp_trunc_mod)[2]
     diff_est <- rbind(comp_diff, comp_trunc_diff, dl_diff, dl_half_diff, tobit_diff, tcensReg_diff)
-    
+
     #standard deviation estimates
     comp_sd <- summary(comp_mod)$sigma
     dl_sd <- summary(dl_mod)$sigma
@@ -154,7 +154,7 @@ cens_diff_sim_noninf <- function(rand_seed, mu1_vec, non_inf_margin, sd_vec, n1,
     # comp_trunc_sd <- exp(comp_trunc_mod$theta[3])
     comp_trunc_sd <- coef(comp_trunc_mod)[3]
     sd_est <- rbind(comp_sd, comp_trunc_sd, dl_sd, dl_half_sd, tobit_sd, tcensReg_sd)
-    
+
     #returning the combined mean estimate and standard deviation estimates
     #first four rows are the mean estimate
     #next four rows are the standard deviation estimate
@@ -169,14 +169,14 @@ cens_diff_sim_noninf <- function(rand_seed, mu1_vec, non_inf_margin, sd_vec, n1,
   row.names(diff_rep) <- method_names
   sd_rep <- param_rep[7:12,,,]
   row.names(sd_rep) <- method_names
-  
+
   #####################################
   #####Non-Inferiority Testing#########
   #####################################
   if(sum(true_diff==-0.15)>=1){ #if the true difference is set to -0.15 then we want to run non-inferiority testing
     non_inf_values <- which(beta[, "beta_1"]== -0.15)
     non_inferior_margin <- non_inf_margin #this value is chosen based on D.8.2.2 of ISO 11979-7 2014; and C.3.2.2 of ISO 11979-9 2006 (typically -0.15 for our example)
-    
+
     sd_rep_adj <- ((n1+n2)/(n1+n2-2)) * sd_rep[,non_inf_values,,] #applying an adjustment since the mle was biased
     lb_ci <- diff_rep[,non_inf_values,,] - qnorm(1 - alpha)*(sd_rep_adj*sqrt(1/n1 + 1/n2)) #calculating the lower_bound confidence interval
     reject_avg <- apply(lb_ci, c(1, 2, 3), function(x) mean(x>non_inf_margin)) #if the lb confidence interval is above the non_inf margin then we reject
@@ -188,10 +188,10 @@ cens_diff_sim_noninf <- function(rand_seed, mu1_vec, non_inf_margin, sd_vec, n1,
     writeLines("=======================================")
     print(round(reject_results, 4))
   }
-  
+
   return(reject_results)
-  
-  
+
+
 }
 
 tictoc::tic()
