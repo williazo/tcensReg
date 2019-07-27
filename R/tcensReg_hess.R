@@ -1,4 +1,5 @@
 #' Hessian Matrix for Truncated Normal Distribution with Censoring with Linear Equation Mean
+#'
 #' @param theta Numeric vector numeric vector containing estimates of beta and log sigma
 #' @param a Numeric scalar indicating the truncation value
 #' @param v Numeric scalar indicating the censoring value

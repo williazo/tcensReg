@@ -1,9 +1,9 @@
-#' Regression Method for Truncated Normal Distribution with Censoring
+#' Regression Method for Truncated Normal Distribution with Censored Data
 #'
-#' This function is used to find estimates from a linear equation assuming that the data is observed from a truncated
-#'  distribution with left censoring. It uses analytically derived values of the gradient vector and hessian matrix to
-#'  iteratively solve for the maximum likelihood using Newton-Raphson methods with line search. This function can also
-#'  be used with censored only, truncated only, or uncensored and untruncated gaussian models.
+#'  This function is used to find estimates from a linear equation assuming that the underlying distribution is truncated normal
+#'  and the data has subsequently been censored data. It uses analytically derived values of the gradient vector and Hessian matrix to
+#'  iteratively solve for the maximum likelihood using Newton-Raphson methods with step halving line search. This function can also
+#'  be used with censored only (similar to \code{\link{censReg}}), truncated only (similar to \code{\link{truncreg}}), or uncensored and untruncated gaussian models.
 #'
 #' @param formula Object of class \code{formula} which symbolically describes the model to be fit
 #' @param a Numeric scalar indicating the truncation value. Initial value is -Inf indicating no truncation
@@ -21,14 +21,14 @@
 tcensReg <- function(formula, a = -Inf, v = NULL, data = sys.frame(sys.parent()), ...){
 
   #checks for proper specification of formula
-  if(class(formula)!= "formula"){
+  if(class(formula) != "formula"){
     stop("`formula` must be a formula", call. = FALSE)
   } else if (length(formula) != 3){
     stop("`formula` must be 2-sided", call. = FALSE)
   }
   if(is.null(v) & a == -Inf){
     warning("`v` and `a` are not specified indicating no censoring and no truncation", call. = FALSE)
-  }else if(is.null(v) & a!= -Inf){
+  }else if(is.null(v) & a != -Inf){
     warning("`v`is not specified indicating no censoring", call. = FALSE)
   }else if(!is.null(v) & a == -Inf){
     warning("`a` is not specified indicating no truncation", call. = FALSE)
@@ -41,9 +41,10 @@ tcensReg <- function(formula, a = -Inf, v = NULL, data = sys.frame(sys.parent())
     stop("`a`, and `v` must both be scalars", call. = FALSE)
   }
 
+  #outcome vector
   y <- model.frame(formula, data)[, 1]
+  #design matrix
   X <- model.matrix(formula, data)
-  #here we have at least some explanatory variables
 
   #reading in the newton raphson for the truncated censored normal
   results <- tcensReg_newton(y, X, a, v, ...)
