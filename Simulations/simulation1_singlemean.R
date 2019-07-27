@@ -6,11 +6,14 @@
 ## Produced:    July-August 2018
 #################################
 #installing and loading the needed packages
-list.of.packages <- c("msm", "devtools", "tictoc", "parallel")
+list.of.packages <- c("msm", "devtools", "tictoc", "future.apply")
 new.packages <- list.of.packages[!(list.of.packages %in% installed.packages()[,"Package"])]
 if(length(new.packages)) install.packages(new.packages)
 lapply(list.of.packages, require, character.only = T)
 rm(new.packages, list.of.packages)
+
+#enabling parallel processing
+future::plan(multiprocess)
 
 #installing the package for estimating truncated with censoring from GitHub page
 devtools::install_github("williazo/tcensReg")
@@ -46,7 +49,7 @@ contrast_sens_sim_tnorm <- function(rand_seed, obs, B, mu_vec, sd_vec, tobit_val
 
   #generating random normal data and cutting off the censored observations according to the appropriate method
   csf_dat_tnorm <- function(n, mu, sd, reps){
-    parallel::mclapply(1:B, function(B){
+    future.apply::future_lapply(1:B, function(B){
 
       y_star <- msm::rtnorm(n, mu, sd, lower = a)
       y_dl   <- cens_method(y_star, "DL", tobit_val)
@@ -88,7 +91,7 @@ contrast_sens_sim_tnorm <- function(rand_seed, obs, B, mu_vec, sd_vec, tobit_val
   writeLines("")
 
   #### Calculating the parameter statistics
-  param_rep <- apply(array_test, c(3, 4, 5), function(dt_X){
+  param_rep <- future.apply::future_apply(array_test, c(3, 4, 5), function(dt_X){
     df <- data.frame(dt_X)
     #fitting the models
     comp_mod <- lm(y_star ~ 1, data = df)
@@ -273,4 +276,5 @@ tictoc::tic()
 tnorm_results <- contrast_sens_sim_tnorm(rand_seed = 123580, obs = 100, B = 1000, mu_vec = seq(0.7, 1.1, 0.1),
                                          sd_vec = c(0.4, 0.45, 0.5), tobit_val = 0.61, a = 0)
 tictoc::toc()
-
+# parallization is done locally using 4 cores
+# total time for 1000 repitions 164.436 sec elapsed (~aprox 3 mins)
