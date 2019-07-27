@@ -6,11 +6,14 @@
 ## Produced:    July-August 2018
 #################################
 #installing and loading the needed packages
-list.of.packages <- c("msm", "devtools", "tictoc", "parallel")
+list.of.packages <- c("msm", "devtools", "tictoc", "future.apply", "truncreg")
 new.packages <- list.of.packages[!(list.of.packages %in% installed.packages()[,"Package"])]
 if(length(new.packages)) install.packages(new.packages)
 lapply(list.of.packages, require, character.only = T)
 rm(new.packages, list.of.packages)
+
+#enabling parallel processing
+future::plan(multiprocess)
 
 #installing the package for estimating truncated with censoring from GitHub page
 devtools::install_github("williazo/tcensReg")
@@ -57,7 +60,7 @@ cens_diff_sim_noninf <- function(rand_seed, mu1_vec, non_inf_margin, sd_vec, n1,
   # max_trunc_prob <- pnorm(a, mean = min(mu2_vec), sd = max(sd_vec), lower.tail = TRUE)
 
   set.seed(rand_seed)
-  ls_dt <-parallel::mclapply(1:B, function(num_reps){ #looping the function over the number of replicates
+  ls_dt <- future.apply::future_lapply(1:B, function(num_reps){ #looping the function over the number of replicates
     lapply(sd_vec, function(s){ #applying over the number of different standard deviation values
       lapply(1:nrow(beta), function(x){ #each row of beta matrix represents a unique mu1, mu2 combination
         y_star_1 <- msm::rtnorm(n = n1, mean = unname(beta[x, 1]), sd = s, lower = a) #oversampling from a normal distribution
@@ -109,7 +112,7 @@ cens_diff_sim_noninf <- function(rand_seed, mu1_vec, non_inf_margin, sd_vec, n1,
 
   ##### Estimating the Parameters for each of the Six Methods
   method_names <- c("Uncens_NT", "GS", "DL", "DL_half", "Tobit", "tcensReg")
-  param_rep <- apply(dt, c(3, 4, 5), function(dt_X){
+  param_rep <- future.apply::future_apply(dt, c(3, 4, 5), function(dt_X){
     df <- data.frame(dt_X)
     #fitting the models
     comp_mod <- lm(y_star ~ group, data = df)
@@ -198,3 +201,5 @@ tictoc::tic()
 sim_results <- cens_diff_sim_noninf(rand_seed = 1509587, mu1_vec = c(1.1, 1.0), non_inf_margin = -0.15, sd_vec = c(0.4, 0.45, 0.5),
                                     n1 = 100, n2 = 100, B = 10000, tobit_val = 0.61, a = 0, alpha = 0.05)
 tictoc::toc()
+# parallization is done locally using 4 cores
+# total time for 10000 repitions 1197.677 sec elapsed (~aprox 20 mins)

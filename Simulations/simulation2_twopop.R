@@ -318,7 +318,6 @@ sim_results <- cens_diff_sim(rand_seed = 1616, mu1_vec = c(1.1, 1.0),
                              true_diff = c(-0.3, -0.2, -0.1, 0), sd_vec = c(0.4, 0.45, 0.5),
                              n1 = 100, n2 = 100, B = 10000, tobit_val = 0.61, a = 0, alpha = 0.05)
 tictoc::toc()
-
-
+#For 1000 iterations this took 400.187 sec elapsed (~ aprox 7 mins)
 
 
