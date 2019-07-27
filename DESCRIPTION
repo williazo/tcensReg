@@ -1,13 +1,18 @@
 Package: tcensReg
-Title: Maximum Likelihood for Truncated Data with Censoring
-Version: 0.0.0.9000
+Title: Maximum Likelihood Estimation of a Truncated Normal Distribution with Censored Data
+Version: 0.0.1.9000
 Authors@R:
     person(given = "Justin",
            family = "Williams",
            email = "williazo@ucla.edu", role = c("aut", "cre"))
-Description: Implements a Newton-Raphson algorithm to find maximum likelihood estimates for a linear equation using analytical values of the gradient and hessian.
-Depends: R (>= 3.3)
-Imports: censReg, maxLik
+Description: Implements a Newton-Raphson algorithm to find maximum likelihood estimates  using analytical values of the gradient and Hessian.
+Depends: 
+    R (>= 3.3)
+    censReg
+    maxLik
+    msm
+Imports: 
+    future.apply
 License: MIT + file LICENSE
 Encoding: UTF-8
 LazyData: true
