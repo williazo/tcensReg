@@ -10,9 +10,8 @@
 #' @param step_max Maximum number of steps when performing line search. Default is 10
 #' @param tol_val Tolerance value used to stop the algorithm if the (n+1) and (n) log likelihood is within the tolerance limit
 #'
-#' @import censReg
 #' @importFrom stats coef dnorm lm model.frame model.matrix pnorm
-#' @importFrom censReg censReg
+#'
 #' @export
 #'
 #' @return Returns a list of final estimate of theta, total number of iterations performed, initial log-likelihood,
@@ -30,8 +29,8 @@ tcensReg_newton<-function(y, X, a = -Inf, v = NULL, epsilon = 1e-4,
   #if censored only, normal, or truncated only then use estimates from OLS
  if(is.null(theta_init) == TRUE & (a != -Inf & is.null(v) == FALSE)){
     #if censored and truncated then use initial estimates from censored only model
-    cens_mod <- censReg::censReg(y ~ X - 1, left = v)
-    theta_init <- unname(coef(cens_mod))
+    cens_mod <- suppressWarnings(tcensReg(y ~ X - 1, v = v))
+    theta_init <- unname(cens_mod$theta)
  } else{
    lm_mod <- lm(y ~ X - 1)
    theta_init <- c(unname(coef(lm_mod)), log(unname(summary(lm_mod)$sigma)))

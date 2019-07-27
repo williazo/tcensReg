@@ -8,9 +8,7 @@ Authors@R:
 Description: Implements a Newton-Raphson algorithm to find maximum likelihood estimates  using analytical values of the gradient and Hessian.
 Depends: 
     R (>= 3.3),
-    censReg,
-    maxLik,
-    msm
+    maxLik
 Imports: 
     future.apply
 License: MIT + file LICENSE
