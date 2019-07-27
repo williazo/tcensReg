@@ -2,7 +2,7 @@
 % Please edit documentation in R/tcensReg.R
 \name{tcensReg}
 \alias{tcensReg}
-\title{Regression Method for Truncated Normal Distribution with Censoring}
+\title{Regression Method for Truncated Normal Distribution with Censored Data}
 \usage{
 tcensReg(formula, a = -Inf, v = NULL, data = sys.frame(sys.parent()),
   ...)
@@ -21,8 +21,5 @@ Returns a list of final estimate of theta, total number of iterations performed,
 final log-likelihood, and estimated variance covariance matrix.
 }
 \description{
-This function is used to find estimates from a linear equation assuming that the data is observed from a truncated
- distribution with left censoring. It uses analytically derived values of the gradient vector and hessian matrix to
- iteratively solve for the maximum likelihood using Newton-Raphson methods with line search. This function can also
- be used with censored only, truncated only, or uncensored and untruncated gaussian models.
+Regression Method for Truncated Normal Distribution with Censored Data
 }
