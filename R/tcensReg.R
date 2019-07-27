@@ -3,7 +3,7 @@
 #'  This function is used to find estimates from a linear equation assuming that the underlying distribution is truncated normal
 #'  and the data has subsequently been censored data. It uses analytically derived values of the gradient vector and Hessian matrix to
 #'  iteratively solve for the maximum likelihood using Newton-Raphson methods with step halving line search. This function can also
-#'  be used with censored only (similar to \code{\link{censReg}}), truncated only (similar to \code{link\{truncreg}}), or uncensored and untruncated gaussian models.
+#'  be used with censored only (similar to \code{\link{censReg}}), truncated only (similar to \code{\link{truncreg}}), or uncensored and untruncated gaussian models.
 #'
 #' @param formula Object of class \code{formula} which symbolically describes the model to be fit
 #' @param a Numeric scalar indicating the truncation value. Initial value is -Inf indicating no truncation
