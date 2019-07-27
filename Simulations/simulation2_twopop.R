@@ -6,11 +6,13 @@
 ## Produced:    July-August 2018
 #################################
 #installing and loading the needed packages
-list.of.packages <- c("msm", "devtools", "tictoc", "parallel")
-new.packages <- list.of.packages[!(list.of.packages %in% installed.packages()[,"Package"])]
-if(length(new.packages)) install.packages(new.packages)
-lapply(list.of.packages, require, character.only = T)
-rm(new.packages, list.of.packages)
+.list.of.packages <- c("msm", "devtools", "tictoc", "future.apply")
+.new.packages <- .list.of.packages[!(.list.of.packages %in% installed.packages()[,"Package"])]
+if(length(.new.packages)) install.packages(.new.packages)
+sapply(.list.of.packages, require, character.only = T)
+
+#enabling parallel processing
+future::plan(multiprocess)
 
 #installing the package for estimating truncated with censoring from GitHub page
 devtools::install_github("williazo/tcensReg")
@@ -56,7 +58,7 @@ cens_diff_sim <- function(rand_seed, mu1_vec, true_diff, sd_vec, n1, n2, B, tobi
   beta_1 <- true_diff
   beta <- cbind(beta_0 = rep(beta_0, each = num_diff), beta_1 = rep(true_diff, num_mu1))
   Xb <- X%*%t(beta)
-  ls_dt <- parallel::mclapply(1:B, function(B){ #looping the function over the number of replicates
+  ls_dt <- future.apply::future_lapply(1:B, function(B){ #looping the function over the number of replicates
     lapply(sd_vec, function(s){ #applying over the number of different standard deviation values
       lapply(1:ncol(Xb), function(x){ #each column of Xb represents a unique mu1, mu2 combination
         y_star = msm::rtnorm(n = n1 + n2, mean = Xb[, x], sd = s, lower = a)
@@ -106,7 +108,7 @@ cens_diff_sim <- function(rand_seed, mu1_vec, true_diff, sd_vec, n1, n2, B, tobi
 
   ##### Estimating the Parameters for each of the Six Methods
   method_names <- c("Uncens_NT", "GS", "DL", "DL_half", "Tobit", "tcensReg")
-  param_rep <- apply(dt, c(3, 4, 5), function(dt_X){
+  param_rep <- future.apply::future_apply(dt, c(3, 4, 5), function(dt_X){
     df <- data.frame(dt_X)
     #fitting the models
     comp_mod <- lm(y_star ~ group, data = df)
@@ -306,12 +308,9 @@ cens_diff_sim <- function(rand_seed, mu1_vec, true_diff, sd_vec, n1, n2, B, tobi
                                        percent_cens[, paste0(c("Group_1", "Group_2"), "_pctcens")],
                                        reject_df))
     return(list(mean_diff = results_mean, sd = results_sd, non_inf = results_noninf))
-  }else{
+  } else{
     return(list(mean_diff = results_mean, sd = results_sd))
   }
-
-
-
 }
 
 tictoc::tic()
@@ -319,5 +318,7 @@ sim_results <- cens_diff_sim(rand_seed = 1616, mu1_vec = c(1.1, 1.0),
                              true_diff = c(-0.3, -0.2, -0.1, 0), sd_vec = c(0.4, 0.45, 0.5),
                              n1 = 100, n2 = 100, B = 10000, tobit_val = 0.61, a = 0, alpha = 0.05)
 tictoc::toc()
+
+
 
 
