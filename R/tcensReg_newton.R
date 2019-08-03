@@ -10,33 +10,34 @@
 #' @param step_max Maximum number of steps when performing line search. Default is 10
 #' @param tol_val Tolerance value used to stop the algorithm if the (n+1) and (n) log likelihood is within the tolerance limit
 #'
-#' @import censReg
 #' @importFrom stats coef dnorm lm model.frame model.matrix pnorm
-#' @importFrom censReg censReg
+#'
 #' @export
 #'
 #' @return Returns a list of final estimate of theta, total number of iterations performed, initial log-likelihood,
 #' final log-likelihood, and estimated variance covariance matrix.
 
 
-tcensReg_newton<-function(y, X, a = -Inf, v = NULL, epsilon = 1e-4, tol_val = 1e-6, max_iter=100, step_max = 10, theta_init = NULL){
+tcensReg_newton<-function(y, X, a = -Inf, v = NULL, epsilon = 1e-4,
+                          tol_val = 1e-6, max_iter = 100, step_max = 10,
+                          theta_init = NULL){
 
   #starting the iteration counter at one
-  i<-1
+  i <- 1
 
   #want to use different inital estimates depending on whether it is truncation only, censor only, or truncated and censored
   #if censored only, normal, or truncated only then use estimates from OLS
-  if(is.null(theta_init)==TRUE & (a == -Inf & is.null(v) == TRUE) | (a == -Inf & is.null(v) == FALSE) | (a != -Inf & is.null(v) == TRUE)){
-    lm_mod <- lm(y ~ X - 1)
-    theta_init <- c(unname(coef(lm_mod)), log(unname(summary(lm_mod)$sigma)))
-  }else if(is.null(theta_init)==TRUE & (a != -Inf & is.null(v) == FALSE)){
+ if(is.null(theta_init) == TRUE & (a != -Inf & is.null(v) == FALSE)){
     #if censored and truncated then use initial estimates from censored only model
-    cens_mod <- censReg::censReg(y ~ X - 1, left = v)
-    theta_init <- unname(coef(cens_mod))
+    cens_mod <- suppressWarnings(tcensReg(y ~ X - 1, v = v))
+    theta_init <- unname(cens_mod$theta)
+ } else{
+   lm_mod <- lm(y ~ X - 1)
+   theta_init <- c(unname(coef(lm_mod)), log(unname(summary(lm_mod)$sigma)))
   }
 
 
-  theta<-theta_init #assigning the inital value for our first iterate
+  theta <- theta_init #assigning the inital value for our first iterate
   p <- length(theta) #total number of parameters
   f_0 <- tcensReg_llike(theta, y, X, a, v) #calculating the initial log likelihood value
   tol_check <- 10 * tol_val #initially setting this value so that the tolerance condition will not be satisfied (guarantees at least one iteration)
@@ -44,19 +45,19 @@ tcensReg_newton<-function(y, X, a = -Inf, v = NULL, epsilon = 1e-4, tol_val = 1e
   grad_vec <- tcensReg_gradient(theta, y, X, a, v) #calculating the initial gradient
   ihess_matrix <- solve(tcensReg_hess(theta, y, X, a, v)) #caculating the hessian matrix
   #here we loop through iterations until either the maximum iterations is reached or the value of the gradient is less then the specified espilon
-  while(i<=max_iter & sum(abs(grad_vec))>epsilon  & tol_check > tol_val){
-    theta_pot <- theta - ihess_matrix%*%grad_vec #potential value for next iterate
+  while(i <= max_iter & sum(abs(grad_vec)) > epsilon  & tol_check > tol_val){
+    theta_pot <- theta - ihess_matrix %*% grad_vec #potential value for next iterate
     f_1 <- tcensReg_llike(theta_pot, y, X, a, v) #evaluating the log likelihoood at potential iterate
     step_counter <- 1 #setting step counter
     #it is possible that the gradient can overshoot the maximum and so we impose a line search method
     #if the updated log likelihood value is greater than the previous log likelihood then the potential iterate is accepted
-    if(f_0<f_1){
+    if(f_0 < f_1){
       theta <- theta_pot
     }else{
       #if the updated log likelihood value is less than or equal to previous then we need to decrease the amount that is acting on the iterate
-      while(f_0>=f_1 & step_counter<step_max){
-        #repacing the potential value using step counter of 2^(-step counter)
-        theta_pot <- theta - ((1/2)^step_counter)*ihess_matrix%*%grad_vec
+      while(f_0 >= f_1 & step_counter < step_max){
+        #replacing the potential value using step counter of 2^(-step counter)
+        theta_pot <- theta - ((1 / 2) ^ step_counter) * ihess_matrix %*% grad_vec
         #caclculating the potential updated log_likelihood
         f_1 <- tcensReg_llike(theta_pot, y, X, a, v)
         #adding to the step_counter
@@ -67,11 +68,11 @@ tcensReg_newton<-function(y, X, a = -Inf, v = NULL, epsilon = 1e-4, tol_val = 1e
     }
 
     theta <- theta_pot #updating theta
-    tol_check <- abs(f_0-f_1)
+    tol_check <- abs(f_0 - f_1)
     f_0 <- f_1 #updating the log likelihood
     grad_vec <- tcensReg_gradient(theta, y, X, a, v) #updating the gradient vector
     ihess_matrix <- solve(tcensReg_hess(theta, y, X, a, v)) #updating the inverse_hess_matrix
-    i<-i+1 #adding the next iterate counter
+    i <- i + 1 #adding the next iterate counter
   }
 
   #using the negative of the last hessian matrix as an estimate of the variance covariance matrix
