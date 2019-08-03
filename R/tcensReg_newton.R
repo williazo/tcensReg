@@ -51,13 +51,13 @@ tcensReg_newton<-function(y, X, a = -Inf, v = NULL, epsilon = 1e-4,
     step_counter <- 1 #setting step counter
     #it is possible that the gradient can overshoot the maximum and so we impose a line search method
     #if the updated log likelihood value is greater than the previous log likelihood then the potential iterate is accepted
-    if(f_0<f_1){
+    if(f_0 < f_1){
       theta <- theta_pot
     }else{
       #if the updated log likelihood value is less than or equal to previous then we need to decrease the amount that is acting on the iterate
-      while(f_0>=f_1 & step_counter<step_max){
-        #repacing the potential value using step counter of 2^(-step counter)
-        theta_pot <- theta - ((1/2) ^ step_counter) * ihess_matrix %*% grad_vec
+      while(f_0 >= f_1 & step_counter < step_max){
+        #replacing the potential value using step counter of 2^(-step counter)
+        theta_pot <- theta - ((1 / 2) ^ step_counter) * ihess_matrix %*% grad_vec
         #caclculating the potential updated log_likelihood
         f_1 <- tcensReg_llike(theta_pot, y, X, a, v)
         #adding to the step_counter
@@ -68,11 +68,11 @@ tcensReg_newton<-function(y, X, a = -Inf, v = NULL, epsilon = 1e-4,
     }
 
     theta <- theta_pot #updating theta
-    tol_check <- abs(f_0-f_1)
+    tol_check <- abs(f_0 - f_1)
     f_0 <- f_1 #updating the log likelihood
     grad_vec <- tcensReg_gradient(theta, y, X, a, v) #updating the gradient vector
     ihess_matrix <- solve(tcensReg_hess(theta, y, X, a, v)) #updating the inverse_hess_matrix
-    i<-i+1 #adding the next iterate counter
+    i <- i + 1 #adding the next iterate counter
   }
 
   #using the negative of the last hessian matrix as an estimate of the variance covariance matrix

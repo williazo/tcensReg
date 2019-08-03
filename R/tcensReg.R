@@ -37,7 +37,7 @@ tcensReg <- function(formula, a = -Inf, v = NULL, data = sys.frame(sys.parent())
   #checking for proper specification of a and v
   if(!is.null(v) & (!is.numeric(a) | !is.numeric(v))){
     stop("`a` and `v` must both be numeric", call. = FALSE)
-  } else if(!is.null(v)& (length(a)!=1 | length(v)!=1)){
+  } else if(!is.null(v) & (length(a) !=1 | length(v) != 1)){
     stop("`a`, and `v` must both be scalars", call. = FALSE)
   }
 
