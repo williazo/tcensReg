@@ -7,7 +7,8 @@ Authors@R:
            email = "williazo@ucla.edu", role = c("aut", "cre"))
 Description: Implements a Newton-Raphson algorithm to find maximum likelihood estimates  using analytical values of the gradient and Hessian.
 Depends: 
-    R (>= 3.3)
+    R (>= 3.3),
+    maxLik
 Imports: 
     future.apply
 License: MIT + file LICENSE
@@ -16,6 +17,5 @@ LazyData: true
 RoxygenNote: 6.1.0
 Suggests: 
     knitr,
-    rmarkdown,
-    maxLik
+    rmarkdown
 VignetteBuilder: knitr
