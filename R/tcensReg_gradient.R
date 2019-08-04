@@ -34,7 +34,7 @@ tcensReg_gradient <- function(theta, y, X, a = -Inf, v = NULL){
     y_stand <- (y - X %*% theta[seq_len(p - 1)]) / exp(log_sigma)
 
     #calculating the gradient for each beta parameter
-    nabla_beta <- sapply(seq_len(p - 1), FUN = function(j) {
+    nabla_beta <- vapply(seq_len(p - 1), FUN.VALUE = numeric(1), FUN = function(j) {
       d1 <- sum((-X[, j] * exp(-log_sigma) * dnorm(a_stand)) / pnorm(-a_stand))
       d2 <- sum((X[cens, j] * exp(-log_sigma) * (dnorm(v_stand[cens]) - dnorm(a_stand[cens]))) / (pnorm(v_stand[cens]) - pnorm(a_stand[cens])))
       d3 <- sum(X[uncens, j] * exp(-log_sigma) * (y_stand[uncens]))
@@ -60,7 +60,7 @@ tcensReg_gradient <- function(theta, y, X, a = -Inf, v = NULL){
     y_stand <- (y - X %*% theta[seq_len(p - 1)]) / exp(log_sigma)
 
     #calculating the gradient for each beta parameter
-    nabla_beta <- sapply(seq_len(p - 1), function(j){
+    nabla_beta <- vapply(seq_len(p - 1), FUN.VALUE = numeric(1), FUN = function(j){
       d1 <- sum((-X[, j] * exp(-log_sigma) * dnorm(a_stand)) / pnorm(-a_stand))
       d3 <- sum(X[, j] * exp(-log_sigma) * (y_stand))
       nabla <- d1 + d3
