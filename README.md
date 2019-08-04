@@ -11,6 +11,8 @@ You can install ggplot.spaghetti from github via the devtools package with:
 ``` r
 install.packages("devtools")
 devtools::install_github("williazo/tcensReg")
+#to install the package with the accompaining vignette use the command below
+devtools::install_github("williazo/tcensReg", build_opts = c("--no-resave-data", "--no-manual"))
 ```
 
 Example 1: Single Population
@@ -26,6 +28,11 @@ where *a* denotes the value of the left-truncation. In our case we will assume a
 
 ``` r
 library(msm) #we will use this package to generate random values from the truncated normal distribution
+```
+
+    ## Warning: package 'msm' was built under R version 3.5.2
+
+``` r
 mu <- 0.5
 sigma <- 0.5
 a <- 0
@@ -34,7 +41,7 @@ y_star <- msm::rtnorm(n = 1000, mean = mu, sd = sigma, lower = a)
 range(y_star) #note that the lowerbound will always be non-negative
 ```
 
-    ## [1] 0.001101319 2.071706840
+    ## [1] 0.0001174543 2.0605791183
 
 Next, we can imagine a scenario where we have an imprecise measurement of *Y*<sup>\*</sup> leading to censoring. In our case we assume that values below *ν* are censored such that *a* &lt; *ν*. This creates the random variable *Y*, where
 
@@ -48,7 +55,7 @@ y <- ifelse(y_star<=nu, nu, y_star)
 sum(y==nu)/length(y) #calculating the number of censored observations
 ```
 
-    ## [1] 0.162
+    ## [1] 0.16
 
 ``` r
 dt <- data.frame(y_star, y) #collecting the uncensored and censored data together
@@ -67,22 +74,22 @@ tcensReg(y ~ 1, data = dt, a = 0, v = 0.25)
 
     ## $theta
     ##               Estimate
-    ## (Intercept)  0.5293758
-    ## log_sigma   -0.7188691
+    ## (Intercept)  0.5371688
+    ## log_sigma   -0.7407614
     ## 
     ## $iterations
     ## [1] 5
     ## 
     ## $initial_ll
-    ## [1] -650.1115
+    ## [1] -637.1835
     ## 
     ## $final_ll
-    ## [1] -637.1345
+    ## [1] -625.2293
     ## 
     ## $var_cov
     ##               (Intercept)     log_sigma
-    ## (Intercept)  0.0006970955 -0.0006984901
-    ## log_sigma   -0.0006984901  0.0014663579
+    ## (Intercept)  0.0006278282 -0.0006358934
+    ## log_sigma   -0.0006358934  0.0014175198
 
 Note that the this will return parameter estimates, variance-covariance matrix, the number of iterations until convergence, and the initial/final log-likelihood values.
 
@@ -117,8 +124,8 @@ knitr::kable(results_df, format = "markdown", digits = 4)
 |            |      mu|   sigma|  mu\_bias|  sigma\_bias|
 |:-----------|-------:|-------:|---------:|------------:|
 | Truth      |  0.5000|  0.5000|    0.0000|       0.0000|
-| tcensReg   |  0.5294|  0.4873|    0.0294|       0.0127|
-| Normal MLE |  0.6733|  0.3703|    0.1733|       0.1297|
-| Tobit      |  0.6356|  0.4272|    0.1356|       0.0728|
+| tcensReg   |  0.5372|  0.4768|    0.0372|       0.0232|
+| Normal MLE |  0.6715|  0.3654|    0.1715|       0.1346|
+| Tobit      |  0.6350|  0.4209|    0.1350|       0.0791|
 
 Other methods result in significant bias for both *μ* and *σ*.
