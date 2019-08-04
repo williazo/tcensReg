@@ -1,26 +1,29 @@
 ---
-title: "tcensReg: Maximum Likelihood Estimation of a Truncated Normal Distribution with Censored Data"
-output: github_document
+title: "tcensReg"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{tcensReg}
+  %\VignetteEngine{knitr::rmarkdown}
+  \usepackage[utf8]{inputenc}
 ---
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 ```
+# Maximum Likelihood Estimation of a Truncated Normal Distribution with Censored Data
 
 The goal of this package is to estimate parameters from a linear model when the data comes from a truncated normal distribution with censoring. Maximum likelihood values are returned derived from Newton-Raphson algorithm using analytic values of the gradient and hessian. This package is also able to return maximum likelihood estimates for truncated only or censored only data similar to `truncreg` and `censReg` packages.
 
-# Installation
+## Installation
 You can install ggplot.spaghetti from github via the devtools package with:
 
 ```{r eval=FALSE}
 install.packages("devtools")
 devtools::install_github("williazo/tcensReg")
-#to install the package with the accompaining vignette use the command below
-devtools::install_github("williazo/tcensReg", build_opts = c("--no-resave-data", "--no-manual"))
 ```
 
 
-# Example 1: Single Population
+## Example 1: Single Population
 
 Some common examples where this type of problem may arise is when there is a natural truncation imposed by the structure of the data. For instance several applications have an implied zero truncation such as product lifetimes, age, or detection thresholds. To show how to implement the functions within the package, I will demonstrate a simple simulation example.
 
@@ -47,14 +50,14 @@ $Y_{i}=\nu\big(1_{\{Y_{i}^{*}\le\nu\}}\big)+Y_{i}^{*}\big(1-1_{\{Y_{i}^{*}\le\nu
 In the example below we set $\nu=0.25$.
 ```{r}
 nu <- 0.25
-y <- ifelse(y_star<=nu, nu, y_star)
-sum(y==nu)/length(y) #calculating the number of censored observations
+y <- ifelse(y_star <= nu, nu, y_star)
+sum(y == nu)/length(y) #calculating the number of censored observations
 dt <- data.frame(y_star, y) #collecting the uncensored and censored data together
 
 ```
 
 We can observe the histogram and density plot for the uncensored data, which shows the zero-truncation.
-```{r echo=FALSE, warning=FALSE, message = FALSE}
+```{r echo=FALSE, warning=FALSE, message = FALSE, out.width="40%", fig.align="center"}
 library(ggplot2)
 library(viridis)
 ggplot(data = dt, aes(x = y_star, y = ..density..))+
@@ -70,10 +73,9 @@ ggplot(data = dt, aes(x = y_star, y = ..density..))+
         axis.title = element_text(size = 20))
 ```
 
+
 We can then compare this to the censored observations below
-```{r echo=FALSE, warning=FALSE, message = FALSE}
-library(ggplot2)
-library(viridis)
+```{r echo=FALSE, warning=FALSE, message = FALSE, out.width="40%", fig.align="center"}
 ggplot(data = dt, aes(x = y, y = ..density..))+
   geom_histogram(binwidth = 0.25, col = viridis(1, begin = 0.5),fill = viridis(1, begin = 0.5), alpha = 0.6)+
   stat_density(bw = 0.25, col = viridis(1, begin = 0.5), fill = viridis(1, begin = 0.5), alpha = 0.3)+
