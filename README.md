@@ -1,38 +1,48 @@
-tcensReg: Maximum Likelihood Estimation of a Truncated Normal Distribution with Censored Data
+tcensReg: Maximum Likelihood Estimation of a Truncated Normal
+Distribution with Censored Data
 ================
 
-The goal of this package is to estimate parameters from a linear model when the data comes from a truncated normal distribution with censoring. Maximum likelihood values are returned derived from Newton-Raphson algorithm using analytic values of the gradient and hessian. This package is also able to return maximum likelihood estimates for truncated only or censored only data similar to `truncreg` and `censReg` packages.
+The goal of this package is to estimate parameters from a linear model
+when the data comes from a truncated normal distribution with censoring.
+Maximum likelihood values are returned derived from Newton-Raphson
+algorithm using analytic values of the gradient and hessian. This
+package is also able to return maximum likelihood estimates for
+truncated only or censored only data similar to `truncreg` and `censReg`
+packages.
 
-Installation
-============
+# Installation
 
-You can install ggplot.spaghetti from github via the devtools package with:
+You can install ggplot.spaghetti from github via the devtools package
+with:
 
 ``` r
 install.packages("devtools")
 devtools::install_github("williazo/tcensReg")
 #to install the package with the accompaining vignette use the command below
-devtools::install_github("williazo/tcensReg", build_opts = c("--no-resave-data", "--no-manual"))
+devtools::install_github("williazo/tcensReg", build_opts = c("--no-resave-data", "--no-manual"),
+                         build_vignettes = TRUE)
 ```
 
-Example 1: Single Population
-============================
+# Example 1: Single Population
 
-Some common examples where this type of problem may arise is when there is a natural truncation imposed by the structure of the data. For instance several applications have an implied zero truncation such as product lifetimes, age, or detection thresholds. To show how to implement the functions within the package, I will demonstrate a simple simulation example.
+Some common examples where this type of problem may arise is when there
+is a natural truncation imposed by the structure of the data. For
+instance several applications have an implied zero truncation such as
+product lifetimes, age, or detection thresholds. To show how to
+implement the functions within the package, I will demonstrate a simple
+simulation example.
 
-Assume that we have observations from an underlying truncated normal distribution
+Assume that we have observations from an underlying truncated normal
+distribution
 
-*Y*<sup>\*</sup> ∼ TN(*μ*, *σ*<sup>2</sup>, *a*),
+\(Y^{*}\sim\text{TN}(\mu, \sigma^{2}, a)\),
 
-where *a* denotes the value of the left-truncation. In our case we will assume a zero-truncated model by setting *a* = 0.
+where \(a\) denotes the value of the left-truncation. In our case we
+will assume a zero-truncated model by setting
+\(a=0\).
 
 ``` r
 library(msm) #we will use this package to generate random values from the truncated normal distribution
-```
-
-    ## Warning: package 'msm' was built under R version 3.5.2
-
-``` r
 mu <- 0.5
 sigma <- 0.5
 a <- 0
@@ -41,13 +51,19 @@ y_star <- msm::rtnorm(n = 1000, mean = mu, sd = sigma, lower = a)
 range(y_star) #note that the lowerbound will always be non-negative
 ```
 
-    ## [1] 0.0001174543 2.0605791183
+    ## [1] 0.0002495968 2.0480464379
 
-Next, we can imagine a scenario where we have an imprecise measurement of *Y*<sup>\*</sup> leading to censoring. In our case we assume that values below *ν* are censored such that *a* &lt; *ν*. This creates the random variable *Y*, where
+Next, we can imagine a scenario where we have an imprecise measurement
+of \(Y^{*}\) leading to censoring. In our case we assume that values
+below \(\nu\) are censored such that \(a<\nu\). This creates the random
+variable \(Y\),
+where
 
-*Y*<sub>*i*</sub> = *ν*(1<sub>{*Y*<sub>*i*</sub><sup>\*</sup> ≤ *ν*}</sub>) + *Y*<sub>*i*</sub><sup>\*</sup>(1 − 1<sub>{*Y*<sub>*i*</sub><sup>\*</sup> ≤ *ν*}</sub>) and 1<sub>{*Y*<sub>*i*</sub><sup>\*</sup> ≤ *ν*}</sub> = 1 is *Y*<sub>*i*</sub><sup>\*</sup> ≤ *ν* and 0 otherwise.
+\(Y_{i}=\nu\big(1_{\{Y_{i}^{*}\le\nu\}}\big)+Y_{i}^{*}\big(1-1_{\{Y_{i}^{*}\le\nu\}}\big)\)
+and \(1_{\{Y_{i}^{*}\le\nu\}}=1\) is \(Y_{i}^{*}\le\nu\) and 0
+otherwise.
 
-In the example below we set *ν* = 0.25.
+In the example below we set \(\nu=0.25\).
 
 ``` r
 nu <- 0.25
@@ -55,17 +71,21 @@ y <- ifelse(y_star<=nu, nu, y_star)
 sum(y==nu)/length(y) #calculating the number of censored observations
 ```
 
-    ## [1] 0.16
+    ## [1] 0.164
 
 ``` r
 dt <- data.frame(y_star, y) #collecting the uncensored and censored data together
 ```
 
-We can observe the histogram and density plot for the uncensored data, which shows the zero-truncation. ![](README_files/figure-markdown_github/unnamed-chunk-4-1.png)
+We can observe the histogram and density plot for the uncensored data,
+which shows the zero-truncation.
+![](README_files/figure-gfm/unnamed-chunk-4-1.png)<!-- -->
 
-We can then compare this to the censored observations below ![](README_files/figure-markdown_github/unnamed-chunk-5-1.png)
+We can then compare this to the censored observations below
+![](README_files/figure-gfm/unnamed-chunk-5-1.png)<!-- -->
 
-We can then estimate *μ* and *σ* using our observed *Y* values with the `tcensReg` package as shown below.
+We can then estimate \(\mu\) and \(\sigma\) using our observed \(Y\)
+values with the `tcensReg` package as shown below.
 
 ``` r
 library(tcensReg)  #loading the package into the current environment
@@ -74,26 +94,29 @@ tcensReg(y ~ 1, data = dt, a = 0, v = 0.25)
 
     ## $theta
     ##               Estimate
-    ## (Intercept)  0.5371688
-    ## log_sigma   -0.7407614
+    ## (Intercept)  0.5309578
+    ## log_sigma   -0.7528142
     ## 
     ## $iterations
     ## [1] 5
     ## 
     ## $initial_ll
-    ## [1] -637.1835
+    ## [1] -630.655
     ## 
     ## $final_ll
-    ## [1] -625.2293
+    ## [1] -618.927
     ## 
     ## $var_cov
     ##               (Intercept)     log_sigma
-    ## (Intercept)  0.0006278282 -0.0006358934
-    ## log_sigma   -0.0006358934  0.0014175198
+    ## (Intercept)  0.0006133718 -0.0006291891
+    ## log_sigma   -0.0006291891  0.0014192137
 
-Note that the this will return parameter estimates, variance-covariance matrix, the number of iterations until convergence, and the initial/final log-likelihood values.
+Note that the this will return parameter estimates, variance-covariance
+matrix, the number of iterations until convergence, and the
+initial/final log-likelihood values.
 
-Comparing the values to the truth we see that the estimates are unbiased.
+Comparing the values to the truth we see that the estimates are
+unbiased.
 
 ``` r
 output <- tcensReg(y ~ 1, data = dt, a = a, v = nu)
@@ -121,11 +144,12 @@ results_df$sigma_bias <- abs(results_df$sigma - sigma)
 knitr::kable(results_df, format = "markdown", digits = 4)
 ```
 
-|            |      mu|   sigma|  mu\_bias|  sigma\_bias|
-|:-----------|-------:|-------:|---------:|------------:|
-| Truth      |  0.5000|  0.5000|    0.0000|       0.0000|
-| tcensReg   |  0.5372|  0.4768|    0.0372|       0.0232|
-| Normal MLE |  0.6715|  0.3654|    0.1715|       0.1346|
-| Tobit      |  0.6350|  0.4209|    0.1350|       0.0791|
+|            |     mu |  sigma | mu\_bias | sigma\_bias |
+| :--------- | -----: | -----: | -------: | ----------: |
+| Truth      | 0.5000 | 0.5000 |   0.0000 |      0.0000 |
+| tcensReg   | 0.5310 | 0.4710 |   0.0310 |      0.0290 |
+| Normal MLE | 0.6643 | 0.3603 |   0.1643 |      0.1397 |
+| Tobit      | 0.6271 | 0.4166 |   0.1271 |      0.0834 |
 
-Other methods result in significant bias for both *μ* and *σ*.
+Other methods result in significant bias for both \(\mu\) and
+\(\sigma\).

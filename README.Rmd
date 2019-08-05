@@ -16,7 +16,8 @@ You can install ggplot.spaghetti from github via the devtools package with:
 install.packages("devtools")
 devtools::install_github("williazo/tcensReg")
 #to install the package with the accompaining vignette use the command below
-devtools::install_github("williazo/tcensReg", build_opts = c("--no-resave-data", "--no-manual"))
+devtools::install_github("williazo/tcensReg", build_opts = c("--no-resave-data", "--no-manual"),
+                         build_vignettes = TRUE)
 ```
 
 
