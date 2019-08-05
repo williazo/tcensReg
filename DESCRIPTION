@@ -9,7 +9,8 @@ Description: Implements a Newton-Raphson algorithm to find maximum likelihood es
 Depends: 
     R (>= 3.3),
     maxLik,
-    msm
+    msm,
+    viridis
 Imports: 
     future.apply
 License: MIT + file LICENSE
