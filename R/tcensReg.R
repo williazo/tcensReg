@@ -13,40 +13,71 @@
 #' @importFrom stats model.frame model.matrix
 #' @export
 #'
+#' @examples
+#' library(msm)
+#' #truncated normal underlying data
+#' y_star <- msm::rtnorm(n = 1000, mean = 0.5, sd = 1, lower = 0)
+#'
+#' #apply censoring
+#' y <- ifelse(y_star <= 0.25, 0.25, y_star)
+#'
+#' #find MLE estimates
+#' tcensReg(y ~ 1, v = 0.25, a = 0)
 #'
 #' @return Returns a list of final estimate of theta, total number of iterations performed, initial log-likelihood,
 #' final log-likelihood, and estimated variance covariance matrix.
 
 
 tcensReg <- function(formula, a = -Inf, v = NULL, data = sys.frame(sys.parent()), ...){
+    #checks for proper specification of formula
+    if(class(formula) != "formula"){
+        stop("`formula` must be a formula", call. = FALSE)
+        } else if (length(formula) != 3){
+            stop("`formula` must be 2-sided", call. = FALSE)
+        }
 
-  #checks for proper specification of formula
-  if(class(formula) != "formula"){
-    stop("`formula` must be a formula", call. = FALSE)
-  } else if (length(formula) != 3){
-    stop("`formula` must be 2-sided", call. = FALSE)
-  }
-  if(is.null(v) & a == -Inf){
-    warning("`v` and `a` are not specified indicating no censoring and no truncation", call. = FALSE)
-  }else if(is.null(v) & a != -Inf){
-    warning("`v`is not specified indicating no censoring", call. = FALSE)
-  }else if(!is.null(v) & a == -Inf){
-    warning("`a` is not specified indicating no truncation", call. = FALSE)
-  }
+    #outcome vector
+    y <- model.frame(formula, data)[, 1]
+    #design matrix
+    X <- model.matrix(formula, data)
 
-  #checking for proper specification of a and v
-  if(!is.null(v) & (!is.numeric(a) | !is.numeric(v))){
-    stop("`a` and `v` must both be numeric", call. = FALSE)
-  } else if(!is.null(v) & (length(a) !=1 | length(v) != 1)){
-    stop("`a`, and `v` must both be scalars", call. = FALSE)
-  }
+    #checking for proper specification of a and v
+    if(!is.null(v) & (!is.numeric(a) | !is.numeric(v))){
+        stop("`a` and `v` must both be numeric", call. = FALSE)
+        } else if(!is.null(v) & (length(a) !=1 | length(v) != 1)){
+            stop("`a`, and `v` must both be scalars", call. = FALSE)
+            }
+    # checking model specification of truncation and censoring params
+    if(is.null(v) & a == -Inf){
+        warning("`v` and `a` are not specified indicating no censoring and no truncation", call. = FALSE)
+        } else if(is.null(v) & a != -Inf){
+            if(any(y < a)){
+                stop("observed values below specified truncation `a`", call.=FALSE)
+            }
+            warning("`v`is not specified indicating no censoring", call. = FALSE)
+            } else if(!is.null(v) & a == -Inf){
+                len_cens <- sum(y == v, na.rm=TRUE)
+                if(len_cens == 0){
+                    stop("censoring indicated but no observed censored values",
+                         call.=FALSE)
+                    }
+                warning("`a` is not specified indicating no truncation", call. = FALSE)
+                } else {
+                    if(v < a) stop("censoring specified below truncation", call.=FALSE)
+                    if(any(y < a)){
+                        stop("observed values below specified truncation `a`", call.=FALSE)
+                    }
+                    len_cens <- sum(y == v, na.rm = TRUE)
+                    if(len_cens == 0){
+                        stop("censoring indicated but no observed censored values",
+                             call.=FALSE)
+                    }
+                }
 
-  #outcome vector
-  y <- model.frame(formula, data)[, 1]
-  #design matrix
-  X <- model.matrix(formula, data)
 
-  #reading in the newton raphson for the truncated censored normal
-  results <- tcensReg_newton(y, X, a, v, ...)
-  return(results)
+
+
+    #reading in the newton raphson for the truncated censored normal
+    results <- tcensReg_newton(y, X, a, v, ...)
+    return(results)
 }
