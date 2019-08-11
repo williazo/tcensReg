@@ -26,3 +26,15 @@ This function is used to find estimates from a linear equation assuming that the
  iteratively solve for the maximum likelihood using Newton-Raphson methods with step halving line search. This function can also
  be used with censored only (similar to \code{\link{censReg}}), truncated only (similar to \code{\link{truncreg}}), or uncensored and untruncated gaussian models.
 }
+\examples{
+library(msm)
+#truncated normal underlying data
+y_star <- msm::rtnorm(n = 1000, mean = 0.5, sd = 1, lower = 0)
+
+#apply censoring
+y <- ifelse(y_star <= 0.25, 0.25, y_star)
+
+#find MLE estimates
+tcensReg(y ~ 1, v = 0.25, a = 0)
+
+}
