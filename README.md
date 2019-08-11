@@ -19,8 +19,8 @@ with:
 install.packages("devtools")
 devtools::install_github("williazo/tcensReg")
 #to install the package with the accompaining vignette use the command below
-devtools::install_github("williazo/tcensReg", build_opts = c("--no-resave-data", "--no-manual"),
-                         build_vignettes = TRUE)
+devtools::install_github("williazo/tcensReg", build_opts=c("--no-resave-data", "--no-manual"),
+                         build_vignettes=TRUE)
 ```
 
 # Example 1: Single Population
@@ -33,13 +33,10 @@ implement the functions within the package, I will demonstrate a simple
 simulation example.
 
 Assume that we have observations from an underlying truncated normal
-distribution
-
-\(Y^{*}\sim\text{TN}(\mu, \sigma^{2}, a)\),
-
-where \(a\) denotes the value of the left-truncation. In our case we
-will assume a zero-truncated model by setting
-\(a=0\).
+distribution. In our case we will assume a zero-truncated model by
+setting a=0. We generate this truncated normal data below and refer to
+it as
+`ystar`.
 
 ``` r
 library(msm) #we will use this package to generate random values from the truncated normal distribution
@@ -47,31 +44,26 @@ mu <- 0.5
 sigma <- 0.5
 a <- 0
 
-y_star <- msm::rtnorm(n = 1000, mean = mu, sd = sigma, lower = a)
+y_star <- msm::rtnorm(n=1000, mean=mu, sd=sigma, lower=a)
 range(y_star) #note that the lowerbound will always be non-negative
 ```
 
-    ## [1] 0.0002495968 2.0480464379
+    ## [1] 0.0002510439 2.2261729774
 
 Next, we can imagine a scenario where we have an imprecise measurement
-of \(Y^{*}\) leading to censoring. In our case we assume that values
-below \(\nu\) are censored such that \(a<\nu\). This creates the random
-variable \(Y\),
-where
+of `ystar` leading to censoring. In our case we assume that values below
+a limit of detection, `nu`, are censored. This creates a random variable
+`y`.
 
-\(Y_{i}=\nu\big(1_{\{Y_{i}^{*}\le\nu\}}\big)+Y_{i}^{*}\big(1-1_{\{Y_{i}^{*}\le\nu\}}\big)\)
-and \(1_{\{Y_{i}^{*}\le\nu\}}=1\) is \(Y_{i}^{*}\le\nu\) and 0
-otherwise.
-
-In the example below we set \(\nu=0.25\).
+In the example below we set our limit of detection as `nu`=0.25.
 
 ``` r
 nu <- 0.25
-y <- ifelse(y_star<=nu, nu, y_star)
-sum(y==nu)/length(y) #calculating the number of censored observations
+y <- ifelse(y_star <= nu, nu, y_star)
+sum(y == nu)/length(y) #calculating the number of censored observations
 ```
 
-    ## [1] 0.164
+    ## [1] 0.187
 
 ``` r
 dt <- data.frame(y_star, y) #collecting the uncensored and censored data together
@@ -84,32 +76,32 @@ which shows the zero-truncation.
 We can then compare this to the censored observations below
 ![](README_files/figure-gfm/unnamed-chunk-5-1.png)<!-- -->
 
-We can then estimate \(\mu\) and \(\sigma\) using our observed \(Y\)
-values with the `tcensReg` package as shown below.
+We can then estimate the mean, `mu`, and standard deviation, `sigma`,
+using `y` with the `tcensReg` package as shown below.
 
 ``` r
 library(tcensReg)  #loading the package into the current environment
-tcensReg(y ~ 1, data = dt, a = 0, v = 0.25)
+tcensReg(y ~ 1, data=dt, a=0, v=0.25)
 ```
 
     ## $theta
     ##               Estimate
-    ## (Intercept)  0.5309578
-    ## log_sigma   -0.7528142
+    ## (Intercept)  0.4733706
+    ## log_sigma   -0.6936526
     ## 
     ## $iterations
     ## [1] 5
     ## 
     ## $initial_ll
-    ## [1] -630.655
+    ## [1] -667.0479
     ## 
     ## $final_ll
-    ## [1] -618.927
+    ## [1] -651.3416
     ## 
     ## $var_cov
     ##               (Intercept)     log_sigma
-    ## (Intercept)  0.0006133718 -0.0006291891
-    ## log_sigma   -0.0006291891  0.0014192137
+    ## (Intercept)  0.0009230291 -0.0009247406
+    ## log_sigma   -0.0009247406  0.0016644569
 
 Note that the this will return parameter estimates, variance-covariance
 matrix, the number of iterations until convergence, and the
@@ -119,9 +111,9 @@ Comparing the values to the truth we see that the estimates are
 unbiased.
 
 ``` r
-output <- tcensReg(y ~ 1, data = dt, a = a, v = nu)
-lm_output <- lm(y ~ 1, data = dt) #running OLS model for comparison
-cens_output <- tcensReg(y ~ 1, data = dt, v = nu) #censored only model, i.e., Tobit model
+output <- tcensReg(y ~ 1, data=dt, a=a, v=nu)
+lm_output <- lm(y ~ 1, data=dt) #running OLS model for comparison
+cens_output <- tcensReg(y ~ 1, data=dt, v=nu) #censored only model, i.e., Tobit model
 ```
 
     ## Warning: `a` is not specified indicating no truncation
@@ -141,15 +133,14 @@ row.names(results_df) <- c("Truth", "tcensReg", "Normal MLE", "Tobit")
 results_df$mu_bias <- abs(results_df$mu - mu)
 results_df$sigma_bias <- abs(results_df$sigma - sigma)
 
-knitr::kable(results_df, format = "markdown", digits = 4)
+knitr::kable(results_df, format="markdown", digits=4)
 ```
 
 |            |     mu |  sigma | mu\_bias | sigma\_bias |
 | :--------- | -----: | -----: | -------: | ----------: |
 | Truth      | 0.5000 | 0.5000 |   0.0000 |      0.0000 |
-| tcensReg   | 0.5310 | 0.4710 |   0.0310 |      0.0290 |
-| Normal MLE | 0.6643 | 0.3603 |   0.1643 |      0.1397 |
-| Tobit      | 0.6271 | 0.4166 |   0.1271 |      0.0834 |
+| tcensReg   | 0.4734 | 0.4997 |   0.0266 |      0.0003 |
+| Normal MLE | 0.6491 | 0.3645 |   0.1491 |      0.1355 |
+| Tobit      | 0.6038 | 0.4307 |   0.1038 |      0.0693 |
 
-Other methods result in significant bias for both \(\mu\) and
-\(\sigma\).
+Other methods result in significant bias for both `mu` and `sigma`.
