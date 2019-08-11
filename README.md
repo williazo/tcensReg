@@ -36,7 +36,7 @@ Assume that we have observations from an underlying truncated normal
 distribution. In our case we will assume a zero-truncated model by
 setting a=0. We generate this truncated normal data below and refer to
 it as
-`ystar`.
+`y_star`.
 
 ``` r
 library(msm) #we will use this package to generate random values from the truncated normal distribution
@@ -48,12 +48,12 @@ y_star <- msm::rtnorm(n=1000, mean=mu, sd=sigma, lower=a)
 range(y_star) #note that the lowerbound will always be non-negative
 ```
 
-    ## [1] 0.0002510439 2.2261729774
+    ## [1] 0.0009733928 2.2896172343
 
 Next, we can imagine a scenario where we have an imprecise measurement
-of `ystar` leading to censoring. In our case we assume that values below
-a limit of detection, `nu`, are censored. This creates a random variable
-`y`.
+of `y_star` leading to censoring. In our case we assume that values
+below a limit of detection, `nu`, are censored. This creates a random
+variable `y`.
 
 In the example below we set our limit of detection as `nu`=0.25.
 
@@ -63,7 +63,7 @@ y <- ifelse(y_star <= nu, nu, y_star)
 sum(y == nu)/length(y) #calculating the number of censored observations
 ```
 
-    ## [1] 0.187
+    ## [1] 0.175
 
 ``` r
 dt <- data.frame(y_star, y) #collecting the uncensored and censored data together
@@ -86,22 +86,22 @@ tcensReg(y ~ 1, data=dt, a=0, v=0.25)
 
     ## $theta
     ##               Estimate
-    ## (Intercept)  0.4733706
-    ## log_sigma   -0.6936526
+    ## (Intercept)  0.5043155
+    ## log_sigma   -0.7153226
     ## 
     ## $iterations
     ## [1] 5
     ## 
     ## $initial_ll
-    ## [1] -667.0479
+    ## [1] -654.8255
     ## 
     ## $final_ll
-    ## [1] -651.3416
+    ## [1] -641.0004
     ## 
     ## $var_cov
     ##               (Intercept)     log_sigma
-    ## (Intercept)  0.0009230291 -0.0009247406
-    ## log_sigma   -0.0009247406  0.0016644569
+    ## (Intercept)  0.0007679602 -0.0007770539
+    ## log_sigma   -0.0007770539  0.0015425278
 
 Note that the this will return parameter estimates, variance-covariance
 matrix, the number of iterations until convergence, and the
@@ -139,8 +139,60 @@ knitr::kable(results_df, format="markdown", digits=4)
 |            |     mu |  sigma | mu\_bias | sigma\_bias |
 | :--------- | -----: | -----: | -------: | ----------: |
 | Truth      | 0.5000 | 0.5000 |   0.0000 |      0.0000 |
-| tcensReg   | 0.4734 | 0.4997 |   0.0266 |      0.0003 |
-| Normal MLE | 0.6491 | 0.3645 |   0.1491 |      0.1355 |
-| Tobit      | 0.6038 | 0.4307 |   0.1038 |      0.0693 |
+| tcensReg   | 0.5043 | 0.4890 |   0.0043 |      0.0110 |
+| Normal MLE | 0.6598 | 0.3651 |   0.1598 |      0.1349 |
+| Tobit      | 0.6185 | 0.4265 |   0.1185 |      0.0735 |
 
 Other methods result in significant bias for both `mu` and `sigma`.
+
+Note also that the `tcensReg` can also estimate parameters in the
+censored-only or truncated-only cases. We show below that by using
+analytic values in the tcensReg implementation that our method is faster
+then the alternative estimation procedures while providing better
+variance estimates.
+
+``` r
+library(microbenchmark)
+#testing the censored-only regression
+library(censReg)
+cens <- microbenchmark(tcensReg_method = tcensReg(y ~ 1, data=dt, v=nu),
+               censReg_method = censReg(y ~ 1, left=nu, data=dt))
+knitr::kable(summary(cens), format="markdown", digits=4)
+```
+
+| expr             |     min |      lq |    mean |  median |      uq |     max | neval |
+| :--------------- | ------: | ------: | ------: | ------: | ------: | ------: | ----: |
+| tcensReg\_method |  4.8422 |  5.2257 |  6.6547 |  5.4520 |  7.0055 | 20.1921 |   100 |
+| censReg\_method  | 13.6909 | 15.2316 | 20.5286 | 18.9823 | 23.0765 | 71.8413 |   100 |
+
+``` r
+#point estimates are equivalent
+tcensReg_est <- as.numeric(tcensReg(y ~ 1, data=dt, v=nu)$theta)
+censReg_est <- as.numeric(coef(censReg(y ~ 1, left=nu, data=dt)))
+all.equal(tcensReg_est, censReg_est)
+```
+
+    ## [1] TRUE
+
+``` r
+#testing the truncated-only regression
+library(truncreg)
+trunc <- microbenchmark(tcensReg_method = tcensReg(y_star ~ 1, data=dt, a=a),
+                        truncreg_method = truncreg(y_star ~ 1, point=a, data=dt))
+knitr::kable(summary(trunc), format="markdown", digits=4)
+```
+
+| expr             |     min |      lq |    mean |  median |      uq |      max | neval |
+| :--------------- | ------: | ------: | ------: | ------: | ------: | -------: | ----: |
+| tcensReg\_method |  8.4497 |  8.8147 | 11.6112 |  9.1379 | 11.2483 | 145.8887 |   100 |
+| truncreg\_method | 26.8167 | 28.4347 | 32.8650 | 33.1872 | 34.8275 |  43.0218 |   100 |
+
+``` r
+tcensReg_est <- as.numeric(tcensReg(y_star ~ 1, data=dt, a=a)$theta)
+#note truncreg returns sigma not log_sigma so we need to exponentiate our value
+tcensReg_est[2] <- exp(tcensReg_est[2])
+truncreg_est <- as.numeric(coef(truncreg(y_star ~ 1, point=a, data=dt)))
+all.equal(tcensReg_est, truncreg_est)
+```
+
+    ## [1] TRUE
