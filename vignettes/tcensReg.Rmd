@@ -76,6 +76,8 @@ ggplot(data = dt, aes(x = y_star, y = ..density..))+
 
 We can then compare this to the censored observations below
 ```{r echo=FALSE, warning=FALSE, message = FALSE, out.width="40%", fig.align="center"}
+library(ggplot2)
+library(viridis)
 ggplot(data = dt, aes(x = y, y = ..density..))+
   geom_histogram(binwidth = 0.25, col = viridis(1, begin = 0.5),fill = viridis(1, begin = 0.5), alpha = 0.6)+
   stat_density(bw = 0.25, col = viridis(1, begin = 0.5), fill = viridis(1, begin = 0.5), alpha = 0.3)+

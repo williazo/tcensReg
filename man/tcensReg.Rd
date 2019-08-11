@@ -14,6 +14,8 @@ tcensReg(formula, a = -Inf, v = NULL, data = sys.frame(sys.parent()),
 
 \item{v}{Numeric scalar indicating the censoring value. Initially set to NULL indicating no censoring}
 
+\item{data}{Data.frame that contains the outcome and corresponding covariates. If none is provided then assumes objects are in user's environment.}
+
 \item{...}{Additional arguments from \code{\link{tcensReg_newton}} such as \code{max_iter}, \code{step_max}, or \code{epsilon}.}
 }
 \value{
@@ -24,7 +26,7 @@ final log-likelihood, and estimated variance covariance matrix.
 This function is used to find estimates from a linear equation assuming that the underlying distribution is truncated normal
  and the data has subsequently been censored data. It uses analytically derived values of the gradient vector and Hessian matrix to
  iteratively solve for the maximum likelihood using Newton-Raphson methods with step halving line search. This function can also
- be used with censored only (similar to \code{\link{censReg}}), truncated only (similar to \code{\link{truncreg}}), or uncensored and untruncated gaussian models.
+ be used with censored only (similar to \code{\link[censReg]{censReg}}), truncated only (similar to \code{\link[truncreg]{truncreg}}), or uncensored and untruncated gaussian models.
 }
 \examples{
 library(msm)
