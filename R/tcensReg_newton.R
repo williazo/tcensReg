@@ -86,5 +86,6 @@ tcensReg_newton<-function(y, X, a = -Inf, v = NULL, epsilon = 1e-4,
   colnames(v_cov) <- row.names(theta)
 
   #returning the final estimates of theta, number of iterations, inital/final log likelihood, and estimated variance covariance matrix
-  return(list(theta = theta, iterations = i - 1, initial_ll = null_ll, final_ll = f_0, var_cov = v_cov))
+  return(list(theta = theta, iterations = i - 1, initial_ll = null_ll,
+              final_ll = f_0, var_cov = v_cov, method="Newton"))
 }
