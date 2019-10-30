@@ -9,7 +9,14 @@
 #' @param a Numeric scalar indicating the truncation value. Initial value is -Inf indicating no truncation
 #' @param v Numeric scalar indicating the censoring value. Initially set to NULL indicating no censoring
 #' @param data Data.frame that contains the outcome and corresponding covariates. If none is provided then assumes objects are in user's environment.
+#' @param method Character value indicating which optimization routine to perform. Choices include \code{Newton}, \code{BFGS}, and \code{CG}. See details for explanation on each method.
 #' @param ... Additional arguments from \code{\link{tcensReg_newton}} such as \code{max_iter}, \code{step_max}, or \code{epsilon}.
+#'
+#' @details
+#'  Currently available optimization routines include conjugate gradient (\code{CG}), Newton-Raphson (\code{Newton}), and BFGS (\code{BFGS}).
+#'  The default method is set as the conjugate gradient. Both the of the conjugate gradient and BFGS methods are implemented via the
+#'  general-purpose optimization \code{\link{optim}}. These two methods use only the respective likelihood and gradient functions.
+#'  The Newton-Raphson method uses the likelihood, gradient, and Hessian functions along with line search to achieve the maximum likelihood.
 #'
 #' @importFrom stats model.frame model.matrix
 #'
@@ -30,8 +37,10 @@
 #' @export
 
 
-tcensReg <- function(formula, a = -Inf, v = NULL, data = sys.frame(sys.parent()), ...){
+tcensReg <- function(formula, a = -Inf, v = NULL, data = sys.frame(sys.parent()),
+                     method = c("CG", "Newton", "BFGS"), ...){
     #checks for proper specification of formula
+    method <- match.arg(method)
     if(class(formula) != "formula"){
         stop("`formula` must be a formula", call. = FALSE)
         } else if (length(formula) != 3){
@@ -80,6 +89,11 @@ tcensReg <- function(formula, a = -Inf, v = NULL, data = sys.frame(sys.parent())
 
 
     #reading in the newton raphson for the truncated censored normal
-    results <- tcensReg_newton(y, X, a, v, ...)
+    if(method == "Newton"){
+        results <- tcensReg_newton(y, X, a, v, ...)
+    } else if(method %in%c("BFGS", "CG")){
+        results <- tcensReg_optim(y, X, a, v, method, ...)
+    }
+
     return(results)
 }
