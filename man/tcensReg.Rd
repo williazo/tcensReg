@@ -5,7 +5,7 @@
 \title{Regression Method for Truncated Normal Distribution with Censored Data}
 \usage{
 tcensReg(formula, a = -Inf, v = NULL, data = sys.frame(sys.parent()),
-  ...)
+  method = c("CG", "Newton", "BFGS"), ...)
 }
 \arguments{
 \item{formula}{Object of class \code{formula} which symbolically describes the model to be fit}
@@ -15,6 +15,8 @@ tcensReg(formula, a = -Inf, v = NULL, data = sys.frame(sys.parent()),
 \item{v}{Numeric scalar indicating the censoring value. Initially set to NULL indicating no censoring}
 
 \item{data}{Data.frame that contains the outcome and corresponding covariates. If none is provided then assumes objects are in user's environment.}
+
+\item{method}{Character value indicating which optimization routine to perform. Choices include \code{Newton}, \code{BFGS}, and \code{CG}. See details for explanation on each method.}
 
 \item{...}{Additional arguments from \code{\link{tcensReg_newton}} such as \code{max_iter}, \code{step_max}, or \code{epsilon}.}
 }
@@ -27,6 +29,12 @@ This function is used to find estimates from a linear equation assuming that the
  and the data has subsequently been censored data. It uses analytically derived values of the gradient vector and Hessian matrix to
  iteratively solve for the maximum likelihood using Newton-Raphson methods with step halving line search. This function can also
  be used with censored only (similar to \code{\link[censReg]{censReg}}), truncated only (similar to \code{\link[truncreg]{truncreg}}), or uncensored and untruncated gaussian models.
+}
+\details{
+Currently available optimization routines include conjugate gradient (\code{CG}), Newton-Raphson (\code{Newton}), and BFGS (\code{BFGS}).
+ The default method is set as the conjugate gradient. Both the of the conjugate gradient and BFGS methods are implemented via the
+ general-purpose optimization \code{\link{optim}}. These two methods use only the respective likelihood and gradient functions.
+ The Newton-Raphson method uses the likelihood, gradient, and Hessian functions along with line search to achieve the maximum likelihood.
 }
 \examples{
 library(msm)
