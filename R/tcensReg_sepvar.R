@@ -1,6 +1,6 @@
-#' Regression Method for Truncated Normal Distribution with Censoring for Indepentend Truncated Normal Groups
+#' @title Regression Method for Truncated Normal Distribution with Censoring for Indepentend Truncated Normal Groups
 #'
-#' This function is used to find estimates from a linear equation assuming that the data is observed from a truncated
+#' @description This function is used to find estimates from a linear equation assuming that the data is observed from a truncated
 #'  distribution with left censoring. It uses numerical values of the gradient vector and hessian matrix to
 #'  solve for the maximum likelihood using \code{maxLik} package. This function can also
 #'  be used with censored only, truncated only, or uncensored and untruncated gaussian models.
@@ -9,15 +9,25 @@
 #' @param a Numeric scalar indicating the truncation value. Initial value is -Inf indicating no truncation
 #' @param v Numeric scalar indicating the censoring value. Initially set to NULL indicating no censoring
 #' @param group_var Character scalar indiciating a variable in the data.frame that defines the independent groups
+#' @param method Character value indicating which optimization routine to perform. Choices include \code{BFGS}, \code{maxLik} and \code{CG}. See details for explanation on each method.
+#' @param theta_init Optional initial values for the parameters. Default is to fit a linear regression model.
+#' @param data Data.frame that contains the outcome and corresponding covariates. If none is provided then assumes objects are in user's environment.
+#' @param max_iter Numeric value indicating the maximum number of iterations to perform.
 #' @param ... Additional arguments from \code{\link{tcensReg_newton}} such as \code{max_iter}, \code{step_max}, or \code{epsilon}.
 #'
 #' @importFrom stats model.frame model.matrix
 #' @importFrom maxLik maxLik
-#' @export
 #'
+#' @details
+#'  Currently available optimization routines include conjugate gradient (\code{CG}), Newton-Raphson type via maxLike package (\code{\link[maxLik]{maxLik}}), and BFGS (\code{BFGS}).
+#'  The default method is set as the conjugate gradient. Both the of the conjugate gradient and BFGS methods are implemented via the
+#'  general-purpose optimization \code{\link{optim}}. These two methods use only the respective likelihood and gradient functions.
+#'  The Newton-Raphson method uses the likelihood, gradient, and Hessian functions along with line search to achieve the maximum likelihood.
 #'
 #' @return Returns a list of final estimate of theta, total number of iterations performed, initial log-likelihood,
 #' final log-likelihood, and estimated variance covariance matrix.
+#'
+#' @export
 
 tcensReg_sepvar <- function(formula, a = -Inf, v = NULL, group_var,
                             method=c("BFGS", "maxLik", "CG"),
