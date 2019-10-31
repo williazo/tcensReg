@@ -85,9 +85,6 @@ tcensReg <- function(formula, a = -Inf, v = NULL, data = sys.frame(sys.parent())
                     }
                 }
 
-
-
-
     #reading in the newton raphson for the truncated censored normal
     if(method == "Newton"){
         results <- tcensReg_newton(y, X, a, v, ...)
