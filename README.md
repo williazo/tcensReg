@@ -48,7 +48,7 @@ y_star <- msm::rtnorm(n=1000, mean=mu, sd=sigma, lower=a)
 round(range(y_star), 3)
 ```
 
-    ## [1] 0.001 2.035
+    ## [1] 0.000 2.327
 
 Next, we can imagine a scenario where we have an imprecise measurement
 of `y_star` leading to censoring. In our case we assume that values
@@ -64,7 +64,7 @@ y <- ifelse(y_star <= nu, nu, y_star)
 sum(y == nu)/length(y) 
 ```
 
-    ## [1] 0.165
+    ## [1] 0.18
 
 ``` r
 #collecting the uncensored and censored data together
@@ -89,22 +89,22 @@ tcensReg(y ~ 1, data=dt, a=0, v=0.25)
 
     ## $theta
     ##               Estimate
-    ## (Intercept)  0.5430849
-    ## log_sigma   -0.7080137
+    ## (Intercept)  0.4962550
+    ## log_sigma   -0.7002455
     ## 
     ## $convergence
     ## [1] 0
     ## 
     ## $initial_ll
-    ## [1] -669.4462
+    ## [1] -667.0245
     ## 
     ## $final_ll
-    ## [1] -657.261
+    ## [1] -652.5841
     ## 
     ## $var_cov
     ##               (Intercept)     log_sigma
-    ## (Intercept)  0.0006949356 -0.0006858591
-    ## log_sigma   -0.0006858591  0.0014462267
+    ## (Intercept)  0.0008335303 -0.0008352166
+    ## log_sigma   -0.0008352166  0.0015865655
     ## 
     ## $method
     ## [1] "CG"
@@ -153,9 +153,9 @@ knitr::kable(results_df, format="markdown", digits=4)
 |            |     mu |  sigma | mu\_bias | sigma\_bias |
 | :--------- | -----: | -----: | -------: | ----------: |
 | Truth      | 0.5000 | 0.5000 |   0.0000 |      0.0000 |
-| tcensReg   | 0.5431 | 0.4926 |   0.0431 |      0.0074 |
-| Normal MLE | 0.6860 | 0.3753 |   0.1860 |      0.1247 |
-| Tobit      | 0.6471 | 0.4346 |   0.1471 |      0.0654 |
+| tcensReg   | 0.4963 | 0.4965 |   0.0037 |      0.0035 |
+| Normal MLE | 0.6602 | 0.3675 |   0.1602 |      0.1325 |
+| Tobit      | 0.6170 | 0.4314 |   0.1170 |      0.0686 |
 
 Other methods result in significant bias for both `mu` and `sigma`.
 
@@ -163,25 +163,27 @@ Note also that the `tcensReg` can also estimate parameters in the
 censored-only or truncated-only cases. We show below that by using
 analytic values in the tcensReg implementation that our method is faster
 then the alternative estimation procedures while providing better
-variance estimates.
+variance estimates. With a small set of covariates and `p<<n` we can use
+the Newton Raphson method of optimization, which is computationally fast
+with few covariates.
 
 ``` r
 library(microbenchmark)
 #testing the censored-only regression
 library(censReg)
-cens <- microbenchmark(tcensReg_method = tcensReg(y ~ 1, data=dt, v=nu),
+cens <- microbenchmark(tcensReg_method = tcensReg(y ~ 1, data=dt, v=nu, method="Newton"),
                censReg_method = censReg(y ~ 1, left=nu, data=dt))
 knitr::kable(summary(cens), format="markdown", digits=4)
 ```
 
 | expr             |     min |      lq |    mean |  median |      uq |      max | neval |
 | :--------------- | ------: | ------: | ------: | ------: | ------: | -------: | ----: |
-| tcensReg\_method | 22.9832 | 25.3502 | 30.4830 | 28.6260 | 30.9246 | 164.2192 |   100 |
-| censReg\_method  | 12.9570 | 13.8407 | 17.7051 | 17.4424 | 19.6942 |  30.3319 |   100 |
+| tcensReg\_method |  4.8107 |  5.2797 |  7.1915 |  5.7365 |  6.9342 |  32.3154 |   100 |
+| censReg\_method  | 13.7251 | 16.3832 | 25.4027 | 20.2063 | 22.4946 | 181.0279 |   100 |
 
 ``` r
 #point estimates are equivalent
-tcensReg_est <- as.numeric(tcensReg(y ~ 1, data=dt, v=nu)$theta)
+tcensReg_est <- as.numeric(tcensReg(y ~ 1, data=dt, v=nu, method="Newton")$theta)
 censReg_est <- as.numeric(coef(censReg(y ~ 1, left=nu, data=dt)))
 all.equal(tcensReg_est, censReg_est)
 ```
@@ -191,25 +193,26 @@ all.equal(tcensReg_est, censReg_est)
 ``` r
 #testing the truncated-only regression
 library(truncreg)
-trunc <- microbenchmark(tcensReg_method = tcensReg(y_star ~ 1, data=dt, a=a),
-                        truncreg_method = truncreg(y_star ~ 1, point=a, data=dt))
+trunc <- microbenchmark(
+  tcensReg_method = tcensReg(y_star ~ 1, data=dt, a=a, method="Newton"),
+  truncreg_method = truncreg(y_star ~ 1, point=a, data=dt))
 knitr::kable(summary(trunc), format="markdown", digits=4)
 ```
 
 | expr             |     min |      lq |    mean |  median |      uq |      max | neval |
 | :--------------- | ------: | ------: | ------: | ------: | ------: | -------: | ----: |
-| tcensReg\_method | 44.3355 | 49.1254 | 53.2531 | 51.3071 | 54.7203 | 186.6858 |   100 |
-| truncreg\_method | 32.4337 | 35.3126 | 39.0361 | 38.8164 | 42.0918 |  53.5055 |   100 |
+| tcensReg\_method |  8.4508 |  8.9854 | 12.3351 | 10.1597 | 12.1834 | 140.6673 |   100 |
+| truncreg\_method | 26.0365 | 28.5910 | 34.5339 | 32.2422 | 38.7620 |  70.2593 |   100 |
 
 ``` r
-tcensReg_est <- as.numeric(tcensReg(y_star ~ 1, data=dt, a=a)$theta)
+tcensReg_est <- as.numeric(tcensReg(y_star ~ 1, data=dt, a=a, method="Newton")$theta)
 #note truncreg returns sigma not log_sigma so we need to exponentiate our value
 tcensReg_est[2] <- exp(tcensReg_est[2])
 truncreg_est <- as.numeric(coef(truncreg(y_star ~ 1, point=a, data=dt)))
 all.equal(tcensReg_est, truncreg_est)
 ```
 
-    ## [1] "Mean relative difference: 4.759978e-07"
+    ## [1] "Mean relative difference: 1.252194e-07"
 
 In the comparisons above we are using an intercept only model, but in
 general we expect that interest lies in understanding how a set of
@@ -242,8 +245,8 @@ knitr::kable(summary(cens), format="markdown", digits=4)
 
 | expr             |      min |       lq |     mean |   median |       uq |      max | neval |
 | :--------------- | -------: | -------: | -------: | -------: | -------: | -------: | ----: |
-| tcensReg\_method | 241.6380 | 249.7943 | 256.3890 | 253.7107 | 258.8464 | 316.4223 |   100 |
-| censReg\_method  | 332.0085 | 344.7658 | 376.4341 | 350.7078 | 356.4211 | 868.6184 |   100 |
+| tcensReg\_method | 208.4625 | 214.4546 | 231.7934 | 219.3142 | 229.9068 | 399.8933 |   100 |
+| censReg\_method  | 285.3236 | 304.4703 | 337.1597 | 314.2466 | 346.7262 | 632.4753 |   100 |
 
 ``` r
 #point estimates are equivalent
@@ -252,7 +255,7 @@ censReg_est <- as.numeric(coef(censReg(y ~ ., left=nu, data=dt)))
 all.equal(tcensReg_est, censReg_est)
 ```
 
-    ## [1] "Mean relative difference: 0.0001694622"
+    ## [1] "Mean relative difference: 0.0001905248"
 
 ``` r
 #testing the truncated-only regression with 100 covariates
@@ -261,20 +264,20 @@ trunc <- microbenchmark(tcensReg_method = tcensReg(y_star ~ ., data=dt, a=a, met
 knitr::kable(summary(trunc), format="markdown", digits=4)
 ```
 
-| expr             |      min |       lq |     mean |   median |       uq |     max | neval |
-| :--------------- | -------: | -------: | -------: | -------: | -------: | ------: | ----: |
-| tcensReg\_method | 278.9889 | 288.3029 | 320.6568 | 290.8264 | 299.2753 | 616.223 |   100 |
-| truncreg\_method | 409.1677 | 420.5612 | 453.9869 | 427.5965 | 448.4774 | 819.408 |   100 |
+| expr             |      min |       lq |     mean |   median |       uq |      max | neval |
+| :--------------- | -------: | -------: | -------: | -------: | -------: | -------: | ----: |
+| tcensReg\_method | 184.9754 | 191.3098 | 210.9298 | 197.6909 | 218.5360 | 347.4651 |   100 |
+| truncreg\_method | 395.4082 | 413.3498 | 458.1695 | 433.9715 | 476.2143 | 752.4025 |   100 |
 
 ``` r
 tcensReg_est <- as.numeric(tcensReg(y_star ~ ., data=dt, a=a, method="BFGS")$theta)
-#note truncreg returns sigma not log_sigma so we need to exponentiate our value
-tcensReg_est[2] <- exp(tcensReg_est[2])
+#note truncreg returns sigma not log_sigma so we need to exponentiate the last parameter value
+tcensReg_est[length(tcensReg_est)] <- exp(tcensReg_est[length(tcensReg_est)])
 truncreg_est <- as.numeric(coef(truncreg(y_star ~ ., point=a, data=dt)))
 all.equal(tcensReg_est, truncreg_est)
 ```
 
-    ## [1] "Mean relative difference: 0.8179081"
+    ## [1] "Mean relative difference: 5.613449e-05"
 
 # Example 2: Two Population Model with Seprate Variances
 
@@ -306,10 +309,10 @@ df <- data.frame(y_star = c(y_1_star, y_2_star),
 Plotting each of these uncensored population densities, we can see the
 difference in shape based on the underlyig parameter selection.
 
-![](README_files/figure-gfm/unnamed-chunk-7-1.png)<!-- -->
+![](README_files/figure-gfm/two_pop_graph-1.png)<!-- -->
 
-Then censoring each obseration at \(\nu\), we are left with `Y1` and
-`Y2`. Again, we let `nu`=0.25.
+Then censoring each obseration at `nu`, we are left with `Y1` and `Y2`.
+Again, we let `nu`=0.25.
 
 ``` r
 nu <- 0.25
@@ -326,28 +329,28 @@ mod_result
 
     ## $theta
     ##       (Intercept) groupPopulation 2        log_sigma1        log_sigma2 
-    ##         0.4941435         0.5749794        -1.4007565         0.6690524 
+    ##         0.5076183         0.5438368        -1.4180676         0.6686763 
     ## 
     ## $convergence
     ## [1] 2
     ## 
     ## $initial_ll
-    ## [1] -1938.57
+    ## [1] -1906.305
     ## 
     ## $final_ll
-    ## [1] -1859.716
+    ## [1] -1830.398
     ## 
     ## $var_cov
     ##                     (Intercept) groupPopulation 2    log_sigma1
-    ## (Intercept)        7.547469e-05     -7.547469e-05 -7.089468e-05
-    ## groupPopulation 2 -7.547469e-05      2.829407e-02  7.089468e-05
-    ## log_sigma1        -7.089468e-05      7.089468e-05  8.092553e-04
-    ## log_sigma2         1.406625e-20     -6.928212e-03 -7.787411e-21
+    ## (Intercept)        7.006140e-05     -7.006140e-05 -5.816753e-05
+    ## groupPopulation 2 -7.006140e-05      2.875721e-02  5.816753e-05
+    ## log_sigma1        -5.816753e-05      5.816753e-05  7.698315e-04
+    ## log_sigma2        -3.251003e-21     -7.031410e-03 -3.472266e-21
     ##                      log_sigma2
-    ## (Intercept)        1.406625e-20
-    ## groupPopulation 2 -6.928212e-03
-    ## log_sigma1        -7.787411e-21
-    ## log_sigma2         2.332267e-03
+    ## (Intercept)       -3.251003e-21
+    ## groupPopulation 2 -7.031410e-03
+    ## log_sigma1        -3.472266e-21
+    ## log_sigma2         2.352315e-03
     ## 
     ## $method
     ## [1] "maxLik"
@@ -368,7 +371,7 @@ results_df$sigma2_bias <- abs(results_df$sigma_2 - sigma_2)
 knitr::kable(results_df, format="markdown", digits=4)
 ```
 
-|          |  mu\_1 | mu\_2 | sigma\_1 | sigma\_2 | mu1\_bias | mu2\_bias | sigma1\_bias | sigma2\_bias |
-| :------- | -----: | ----: | -------: | -------: | --------: | --------: | -----------: | -----------: |
-| Truth    | 0.5000 | 1.000 |   0.2500 |   2.0000 |    0.0000 |     0.000 |       0.0000 |       0.0000 |
-| tcensReg | 0.4941 | 0.575 |   0.2464 |   1.9524 |    0.0059 |     0.425 |       0.0036 |       0.0476 |
+|          |  mu\_1 |  mu\_2 | sigma\_1 | sigma\_2 | mu1\_bias | mu2\_bias | sigma1\_bias | sigma2\_bias |
+| :------- | -----: | -----: | -------: | -------: | --------: | --------: | -----------: | -----------: |
+| Truth    | 0.5000 | 1.0000 |   0.2500 |   2.0000 |    0.0000 |    0.0000 |       0.0000 |       0.0000 |
+| tcensReg | 0.5076 | 0.5438 |   0.2422 |   1.9517 |    0.0076 |    0.4562 |       0.0078 |       0.0483 |
