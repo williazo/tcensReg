@@ -6,7 +6,7 @@
 ## Produced:    July-August 2018
 #################################
 #installing and loading the needed packages
-list.of.packages <- c("msm", "devtools", "tictoc", "future.apply")
+list.of.packages <- c("devtools", "tictoc", "future.apply")
 new.packages <- list.of.packages[!(list.of.packages %in% installed.packages()[,"Package"])]
 if(length(new.packages)) install.packages(new.packages)
 lapply(list.of.packages, require, character.only = T)
@@ -51,7 +51,7 @@ contrast_sens_sim_tnorm <- function(rand_seed, obs, B, mu_vec, sd_vec, tobit_val
   csf_dat_tnorm <- function(n, mu, sd, reps){
     future.apply::future_lapply(1:B, function(B){
 
-      y_star <- msm::rtnorm(n, mu, sd, lower = a)
+      y_star <- rtnorm(n, mu, sd, a)
       y_dl   <- cens_method(y_star, "DL", tobit_val)
       y_dl_half    <- cens_method(y_star, "DL_half", tobit_val)
       y_tobit <- cens_method(y_star, "Tobit", tobit_val)
