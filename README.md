@@ -48,7 +48,7 @@ y_star <- msm::rtnorm(n=1000, mean=mu, sd=sigma, lower=a)
 round(range(y_star), 3)
 ```
 
-    ## [1] 0.000 2.327
+    ## [1] 0.002 2.442
 
 Next, we can imagine a scenario where we have an imprecise measurement
 of `y_star` leading to censoring. In our case we assume that values
@@ -64,7 +64,7 @@ y <- ifelse(y_star <= nu, nu, y_star)
 sum(y == nu)/length(y) 
 ```
 
-    ## [1] 0.18
+    ## [1] 0.161
 
 ``` r
 #collecting the uncensored and censored data together
@@ -89,22 +89,22 @@ tcensReg(y ~ 1, data=dt, a=0, v=0.25)
 
     ## $theta
     ##               Estimate
-    ## (Intercept)  0.4962550
-    ## log_sigma   -0.7002455
+    ## (Intercept)  0.5417343
+    ## log_sigma   -0.7466209
     ## 
     ## $convergence
     ## [1] 0
     ## 
     ## $initial_ll
-    ## [1] -667.0245
+    ## [1] -637.2453
     ## 
     ## $final_ll
-    ## [1] -652.5841
+    ## [1] -625.8284
     ## 
     ## $var_cov
     ##               (Intercept)     log_sigma
-    ## (Intercept)  0.0008335303 -0.0008352166
-    ## log_sigma   -0.0008352166  0.0015865655
+    ## (Intercept)  0.0006059544 -0.0006142957
+    ## log_sigma   -0.0006142957  0.0013988561
     ## 
     ## $method
     ## [1] "CG"
@@ -153,133 +153,13 @@ knitr::kable(results_df, format="markdown", digits=4)
 |            |     mu |  sigma | mu\_bias | sigma\_bias |
 | :--------- | -----: | -----: | -------: | ----------: |
 | Truth      | 0.5000 | 0.5000 |   0.0000 |      0.0000 |
-| tcensReg   | 0.4963 | 0.4965 |   0.0037 |      0.0035 |
-| Normal MLE | 0.6602 | 0.3675 |   0.1602 |      0.1325 |
-| Tobit      | 0.6170 | 0.4314 |   0.1170 |      0.0686 |
+| tcensReg   | 0.5417 | 0.4740 |   0.0417 |      0.0260 |
+| Normal MLE | 0.6730 | 0.3643 |   0.1730 |      0.1357 |
+| Tobit      | 0.6363 | 0.4201 |   0.1363 |      0.0799 |
 
 Other methods result in significant bias for both `mu` and `sigma`.
 
-Note also that the `tcensReg` can also estimate parameters in the
-censored-only or truncated-only cases. We show below that by using
-analytic values in the tcensReg implementation that our method is faster
-then the alternative estimation procedures while providing better
-variance estimates. With a small set of covariates and `p<<n` we can use
-the Newton Raphson method of optimization, which is computationally fast
-with few covariates.
-
-``` r
-library(microbenchmark)
-#testing the censored-only regression
-library(censReg)
-cens <- microbenchmark(tcensReg_method = tcensReg(y ~ 1, data=dt, v=nu, method="Newton"),
-               censReg_method = censReg(y ~ 1, left=nu, data=dt))
-knitr::kable(summary(cens), format="markdown", digits=4)
-```
-
-| expr             |     min |      lq |    mean |  median |      uq |      max | neval |
-| :--------------- | ------: | ------: | ------: | ------: | ------: | -------: | ----: |
-| tcensReg\_method |  4.8107 |  5.2797 |  7.1915 |  5.7365 |  6.9342 |  32.3154 |   100 |
-| censReg\_method  | 13.7251 | 16.3832 | 25.4027 | 20.2063 | 22.4946 | 181.0279 |   100 |
-
-``` r
-#point estimates are equivalent
-tcensReg_est <- as.numeric(tcensReg(y ~ 1, data=dt, v=nu, method="Newton")$theta)
-censReg_est <- as.numeric(coef(censReg(y ~ 1, left=nu, data=dt)))
-all.equal(tcensReg_est, censReg_est)
-```
-
-    ## [1] TRUE
-
-``` r
-#testing the truncated-only regression
-library(truncreg)
-trunc <- microbenchmark(
-  tcensReg_method = tcensReg(y_star ~ 1, data=dt, a=a, method="Newton"),
-  truncreg_method = truncreg(y_star ~ 1, point=a, data=dt))
-knitr::kable(summary(trunc), format="markdown", digits=4)
-```
-
-| expr             |     min |      lq |    mean |  median |      uq |      max | neval |
-| :--------------- | ------: | ------: | ------: | ------: | ------: | -------: | ----: |
-| tcensReg\_method |  8.4508 |  8.9854 | 12.3351 | 10.1597 | 12.1834 | 140.6673 |   100 |
-| truncreg\_method | 26.0365 | 28.5910 | 34.5339 | 32.2422 | 38.7620 |  70.2593 |   100 |
-
-``` r
-tcensReg_est <- as.numeric(tcensReg(y_star ~ 1, data=dt, a=a, method="Newton")$theta)
-#note truncreg returns sigma not log_sigma so we need to exponentiate our value
-tcensReg_est[2] <- exp(tcensReg_est[2])
-truncreg_est <- as.numeric(coef(truncreg(y_star ~ 1, point=a, data=dt)))
-all.equal(tcensReg_est, truncreg_est)
-```
-
-    ## [1] "Mean relative difference: 1.252194e-07"
-
-In the comparisons above we are using an intercept only model, but in
-general we expect that interest lies in understanding how a set of
-covariates effect the mean response. So to test the sensitivity and
-speed as the number of covariates approaches `n` we can generate
-independent random variables `X` and fit the regression model of `Y` or
-`Y_star`.
-
-We can compare the censored-only and truncated-only performance with 100
-predictors, i.e. `p`=20. To illustrate some of the other available
-optimization methods we will set method to BFGS, which is a quasi-Newton
-optimization method.
-
-``` r
-#number of predictors
-p <- 20
-X <- NULL
-for(i in seq_len(p)){
-    X_i <- rnorm(n = length(y))
-    X <- cbind(X, X_i)
-}
-colnames(X) <- paste0("var_", seq_len(p))
-dt <- data.frame(y, X)
-
-#testing the censored-only regression with 100 covariates
-cens <- microbenchmark(tcensReg_method = tcensReg(y ~ ., data=dt, v=nu, method="BFGS"),
-               censReg_method = censReg(y ~ ., left=nu, data=dt))
-knitr::kable(summary(cens), format="markdown", digits=4)
-```
-
-| expr             |      min |       lq |     mean |   median |       uq |      max | neval |
-| :--------------- | -------: | -------: | -------: | -------: | -------: | -------: | ----: |
-| tcensReg\_method | 208.4625 | 214.4546 | 231.7934 | 219.3142 | 229.9068 | 399.8933 |   100 |
-| censReg\_method  | 285.3236 | 304.4703 | 337.1597 | 314.2466 | 346.7262 | 632.4753 |   100 |
-
-``` r
-#point estimates are equivalent
-tcensReg_est <- as.numeric(tcensReg(y ~ ., data=dt, v=nu, method="BFGS")$theta)
-censReg_est <- as.numeric(coef(censReg(y ~ ., left=nu, data=dt)))
-all.equal(tcensReg_est, censReg_est)
-```
-
-    ## [1] "Mean relative difference: 0.0001905248"
-
-``` r
-#testing the truncated-only regression with 100 covariates
-trunc <- microbenchmark(tcensReg_method = tcensReg(y_star ~ ., data=dt, a=a, method="BFGS"),
-                        truncreg_method = truncreg(y_star ~ ., point=a, data=dt))
-knitr::kable(summary(trunc), format="markdown", digits=4)
-```
-
-| expr             |      min |       lq |     mean |   median |       uq |      max | neval |
-| :--------------- | -------: | -------: | -------: | -------: | -------: | -------: | ----: |
-| tcensReg\_method | 184.9754 | 191.3098 | 210.9298 | 197.6909 | 218.5360 | 347.4651 |   100 |
-| truncreg\_method | 395.4082 | 413.3498 | 458.1695 | 433.9715 | 476.2143 | 752.4025 |   100 |
-
-``` r
-tcensReg_est <- as.numeric(tcensReg(y_star ~ ., data=dt, a=a, method="BFGS")$theta)
-#note truncreg returns sigma not log_sigma so we need to exponentiate the last parameter value
-tcensReg_est[length(tcensReg_est)] <- exp(tcensReg_est[length(tcensReg_est)])
-truncreg_est <- as.numeric(coef(truncreg(y_star ~ ., point=a, data=dt)))
-all.equal(tcensReg_est, truncreg_est)
-```
-
-    ## [1] "Mean relative difference: 5.613449e-05"
-
-# Example 2: Two Population Model with Seprate Variances
+# Example 2: Two Population Model with Separate Variances
 
 As an extension for the single population model above, we can imagine a
 two independent truncated normal random variables that have common
@@ -329,28 +209,28 @@ mod_result
 
     ## $theta
     ##       (Intercept) groupPopulation 2        log_sigma1        log_sigma2 
-    ##         0.5076183         0.5438368        -1.4180676         0.6686763 
+    ##         0.4947191         0.4289221        -1.3876226         0.7103326 
     ## 
     ## $convergence
     ## [1] 2
     ## 
     ## $initial_ll
-    ## [1] -1906.305
+    ## [1] -1953.586
     ## 
     ## $final_ll
-    ## [1] -1830.398
+    ## [1] -1868.854
     ## 
     ## $var_cov
     ##                     (Intercept) groupPopulation 2    log_sigma1
-    ## (Intercept)        7.006140e-05     -7.006140e-05 -5.816753e-05
-    ## groupPopulation 2 -7.006140e-05      2.875721e-02  5.816753e-05
-    ## log_sigma1        -5.816753e-05      5.816753e-05  7.698315e-04
-    ## log_sigma2        -3.251003e-21     -7.031410e-03 -3.472266e-21
+    ## (Intercept)        7.831116e-05     -7.831116e-05 -7.490645e-05
+    ## groupPopulation 2 -7.831116e-05      3.692260e-02  7.490645e-05
+    ## log_sigma1        -7.490645e-05      7.490645e-05  8.185619e-04
+    ## log_sigma2         8.479045e-21     -8.475465e-03 -1.374380e-20
     ##                      log_sigma2
-    ## (Intercept)       -3.251003e-21
-    ## groupPopulation 2 -7.031410e-03
-    ## log_sigma1        -3.472266e-21
-    ## log_sigma2         2.352315e-03
+    ## (Intercept)        8.479045e-21
+    ## groupPopulation 2 -8.475465e-03
+    ## log_sigma1        -1.374380e-20
+    ## log_sigma2         2.555892e-03
     ## 
     ## $method
     ## [1] "maxLik"
@@ -373,5 +253,127 @@ knitr::kable(results_df, format="markdown", digits=4)
 
 |          |  mu\_1 |  mu\_2 | sigma\_1 | sigma\_2 | mu1\_bias | mu2\_bias | sigma1\_bias | sigma2\_bias |
 | :------- | -----: | -----: | -------: | -------: | --------: | --------: | -----------: | -----------: |
-| Truth    | 0.5000 | 1.0000 |   0.2500 |   2.0000 |    0.0000 |    0.0000 |       0.0000 |       0.0000 |
-| tcensReg | 0.5076 | 0.5438 |   0.2422 |   1.9517 |    0.0076 |    0.4562 |       0.0078 |       0.0483 |
+| Truth    | 0.5000 | 1.0000 |   0.2500 |   2.0000 |    0.0000 |    0.0000 |        0e+00 |       0.0000 |
+| tcensReg | 0.4947 | 0.4289 |   0.2497 |   2.0347 |    0.0053 |    0.5711 |        3e-04 |       0.0347 |
+
+# Performance Comparison: Censored-Only and Truncated-Only
+
+Note also that the `tcensReg` can also estimate parameters in the
+censored-only or truncated-only cases. We show below that by using
+analytic values in the tcensReg implementation that our method is faster
+then the alternative estimation procedures while providing better
+variance estimates. With a small set of covariates and `p<<n` we can use
+the Newton Raphson method of optimization, which is computationally fast
+with few covariates.
+
+``` r
+library(microbenchmark)
+#testing the censored-only regression
+library(censReg)
+cens <- microbenchmark(tcensReg_method = tcensReg(y ~ 1, data=dt, v=nu, method="Newton"),
+               censReg_method = censReg(y ~ 1, left=nu, data=dt))
+knitr::kable(summary(cens), format="markdown", digits=4)
+```
+
+| expr             |     min |      lq |    mean |  median |      uq |      max | neval |
+| :--------------- | ------: | ------: | ------: | ------: | ------: | -------: | ----: |
+| tcensReg\_method |  4.7019 |  5.3771 |  6.0058 |  5.6841 |  5.9157 |  13.9192 |   100 |
+| censReg\_method  | 13.0509 | 15.4322 | 19.4388 | 16.1687 | 22.0166 | 152.3711 |   100 |
+
+``` r
+#point estimates are equivalent
+tcensReg_est <- as.numeric(tcensReg(y ~ 1, data=dt, v=nu, method="Newton")$theta)
+censReg_est <- as.numeric(coef(censReg(y ~ 1, left=nu, data=dt)))
+all.equal(tcensReg_est, censReg_est)
+```
+
+    ## [1] TRUE
+
+``` r
+#testing the truncated-only regression
+library(truncreg)
+trunc <- microbenchmark(
+  tcensReg_method = tcensReg(y_star ~ 1, data=dt, a=a, method="Newton"),
+  truncreg_method = truncreg(y_star ~ 1, point=a, data=dt))
+knitr::kable(summary(trunc), format="markdown", digits=4)
+```
+
+| expr             |     min |      lq |    mean |  median |      uq |     max | neval |
+| :--------------- | ------: | ------: | ------: | ------: | ------: | ------: | ----: |
+| tcensReg\_method |  8.4808 |  9.0744 | 10.9160 |  9.8203 | 11.8880 | 23.5230 |   100 |
+| truncreg\_method | 26.1070 | 28.9581 | 32.9231 | 32.3717 | 35.7111 | 49.1436 |   100 |
+
+``` r
+tcensReg_est <- as.numeric(tcensReg(y_star ~ 1, data=dt, a=a, method="Newton")$theta)
+#note truncreg returns sigma not log_sigma so we need to exponentiate our value
+tcensReg_est[2] <- exp(tcensReg_est[2])
+truncreg_est <- as.numeric(coef(truncreg(y_star ~ 1, point=a, data=dt)))
+all.equal(tcensReg_est, truncreg_est)
+```
+
+    ## [1] TRUE
+
+In the comparisons above we are using an intercept only model, but in
+general we expect that interest lies in understanding how a set of
+covariates effect the mean response. So to test the sensitivity and
+speed as the number of covariates approaches `n` we can generate
+independent random variables `X` and fit the regression model of `Y` or
+`Y_star`.
+
+We can compare the censored-only and truncated-only performance with 100
+predictors, i.e. `p`=20. To illustrate some of the other available
+optimization methods we will set method to BFGS, which is a quasi-Newton
+optimization method.
+
+``` r
+#number of predictors
+p <- 20
+X <- NULL
+for(i in seq_len(p)){
+    X_i <- rnorm(n = length(y))
+    X <- cbind(X, X_i)
+}
+colnames(X) <- paste0("var_", seq_len(p))
+dt <- data.frame(y, X)
+
+#testing the censored-only regression with 100 covariates
+cens <- microbenchmark(tcensReg_method = tcensReg(y ~ ., data=dt, v=nu, method="BFGS"),
+               censReg_method = censReg(y ~ ., left=nu, data=dt))
+knitr::kable(summary(cens), format="markdown", digits=4)
+```
+
+| expr             |      min |       lq |     mean |   median |       uq |      max | neval |
+| :--------------- | -------: | -------: | -------: | -------: | -------: | -------: | ----: |
+| tcensReg\_method | 238.0559 | 244.0830 | 269.8552 | 247.8826 | 251.4361 | 1395.783 |   100 |
+| censReg\_method  | 311.4006 | 325.0223 | 367.4818 | 331.3247 | 340.7821 | 1093.933 |   100 |
+
+``` r
+#point estimates are equivalent
+tcensReg_est <- as.numeric(tcensReg(y ~ ., data=dt, v=nu, method="BFGS")$theta)
+censReg_est <- as.numeric(coef(censReg(y ~ ., left=nu, data=dt)))
+all.equal(tcensReg_est, censReg_est)
+```
+
+    ## [1] "Mean relative difference: 0.0001712397"
+
+``` r
+#testing the truncated-only regression with 100 covariates
+trunc <- microbenchmark(tcensReg_method = tcensReg(y_star ~ ., data=dt, a=a, method="BFGS"),
+                        truncreg_method = truncreg(y_star ~ ., point=a, data=dt))
+knitr::kable(summary(trunc), format="markdown", digits=4)
+```
+
+| expr             |      min |       lq |     mean |   median |       uq |      max | neval |
+| :--------------- | -------: | -------: | -------: | -------: | -------: | -------: | ----: |
+| tcensReg\_method | 281.5945 | 288.4134 | 295.8103 | 291.8989 | 295.0841 | 425.1505 |   100 |
+| truncreg\_method | 345.9981 | 354.8429 | 370.9717 | 358.8353 | 365.0900 | 507.5020 |   100 |
+
+``` r
+tcensReg_est <- as.numeric(tcensReg(y_star ~ ., data=dt, a=a, method="BFGS")$theta)
+#note truncreg returns sigma not log_sigma so we need to exponentiate the last parameter value
+tcensReg_est[length(tcensReg_est)] <- exp(tcensReg_est[length(tcensReg_est)])
+truncreg_est <- as.numeric(coef(truncreg(y_star ~ ., point=a, data=dt)))
+all.equal(tcensReg_est, truncreg_est)
+```
+
+    ## [1] "Mean relative difference: 4.962433e-05"
