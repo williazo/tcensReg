@@ -1,24 +1,28 @@
 Package: tcensReg
 Title: Maximum Likelihood Estimation of a Truncated Normal Distribution with Censored Data
-Version: 0.1.1
+Version: 0.1.1.9000
 Authors@R:
     person(given = "Justin",
            family = "Williams",
            email = "williazo@ucla.edu", role = c("aut", "cre"))
-Description: Implements a Newton-Raphson algorithm to find maximum likelihood estimates  using analytical values of the gradient and Hessian.
+Description: Estimates parameters using maximum likelihood methods assuming an underlying left truncated normal distribution with left censoring. Censoring is assumed to occur above the truncation threshold meaning that only censored observations are observed. Additional maximum likelihood estimation procedures are implemented to solve left censored only and left truncated only problems.
 Depends: 
     R (>= 3.3)
 License: MIT + file LICENSE
 Encoding: UTF-8
-LazyData: true
+LazyData: false
 RoxygenNote: 6.1.1
+Imports:
+    stats,
+    maxLik
 Suggests: 
     knitr,
     rmarkdown,
     testthat (>= 2.1.0),
     ggplot2,
-    maxLik,
-    msm,
     viridis,
-    future.apply
+    future.apply,
+    tictoc
 VignetteBuilder: knitr
+BugReports: https://github.com/williazo/tcensReg/issues
+URL: https://github.com/williazo/tcensReg
