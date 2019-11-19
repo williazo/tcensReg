@@ -10,7 +10,7 @@ vignette: >
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 ```
-The goal of this package is to estimate parameters from a linear model when the data comes from a truncated normal distribution with censoring. Maximum likelihood values are returned. There are multiple method availabe for optimzation with the default set as conjugate gradient. This package is also able to return maximum likelihood estimates for truncated only or censored only data similar to `truncreg` and `censReg` packages.
+The goal of this package is to estimate parameters from a linear model when the data comes from a truncated normal distribution with censoring. Maximum likelihood values are returned. There are multiple method available for optimization with the default set as conjugate gradient. This package is also able to return maximum likelihood estimates for truncated only or censored only data similar to `truncreg` and `censReg` packages.
 
 # Installation
 You can install `tcensReg` from GitHub via the devtools package with:
@@ -54,7 +54,7 @@ dt <- data.frame(y_star, y)
 ```
 
 We can observe the histogram and density plot for the uncensored data, which shows the zero-truncation.
-```{r echo=FALSE, warning=FALSE, message=FALSE}
+```{r echo=FALSE, warning=FALSE, message=FALSE, fig.align='center',fig.height=4, fig.width=6,tidy=FALSE}
 library(ggplot2)
 library(viridis)
 ggplot(data=dt, aes(x=y_star, y=..density..))+
@@ -71,7 +71,7 @@ ggplot(data=dt, aes(x=y_star, y=..density..))+
 ```
 
 We can then compare this to the censored observations below
-```{r echo=FALSE, warning=FALSE, message=FALSE}
+```{r echo=FALSE, warning=FALSE, message=FALSE, fig.align='center',fig.height=4, fig.width=6,tidy=FALSE}
 ggplot(data=dt, aes(x=y, y=..density..))+
   geom_histogram(binwidth=0.25, col=viridis(1, begin=0.5),fill=viridis(1, begin=0.5), alpha=0.6)+
   stat_density(bw=0.25, col=viridis(1, begin=0.5), fill=viridis(1, begin=0.5), alpha=0.3)+
@@ -145,9 +145,9 @@ df <- data.frame(y_star = c(y_1_star, y_2_star),
                            rep("Population 2", length(y_2_star))))
 ```
 
-Plotting each of these uncensored population densities, we can see the difference in shape based on the underlyig parameter selection.
+Plotting each of these uncensored population densities, we can see the difference in shape based on the underlying parameter selection.
 
-```{r two_pop_graph,echo=FALSE, warning=FALSE, message = FALSE}
+```{r two_pop_graph, echo=FALSE, warning=FALSE, message = FALSE, fig.align='center',fig.height=4, fig.width=6,tidy=FALSE}
 ggplot(data = df, aes(x = y_star, y = ..density.., group = group, fill = group, col = group))+
   stat_density(bw = 0.5, alpha = 0.3)+
   ylab("Density")+
@@ -163,7 +163,7 @@ ggplot(data = df, aes(x = y_star, y = ..density.., group = group, fill = group, 
         axis.title = element_text(size = 20))
 ```
 
-Then censoring each obseration at `nu`, we are left with `Y1` and `Y2`. Again, we let `nu`=0.25.
+Then censoring each observation at `nu`, we are left with `Y1` and `Y2`. Again, we let `nu`=0.25.
 ```{r two_pop_censoring}
 nu <- 0.25
 df$y <- ifelse(df$y_star<=nu, nu, df$y_star)
