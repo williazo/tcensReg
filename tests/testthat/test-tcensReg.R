@@ -28,8 +28,7 @@ test_that("error and warning checks", {
 })
 
 test_that("functional tcensReg output check", {
-    library(msm)
-    y_star <- msm::rtnorm(n = 1000, mean = 0.5, sd = 1, lower = 0)
+    y_star <- rtnorm(n = 1000, mu = 0.5, sd = 1, a = 0)
     y <- ifelse(y_star <= 0.25, 0.25, y_star)
     output <- tcensReg(y ~ 1, v=0.25, a=0)
 
