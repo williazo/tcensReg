@@ -29,7 +29,9 @@ Some common examples where this type of problem may arise is when there is a nat
 
 Assume that we have observations from an underlying truncated normal distribution. In our case we will assume a zero-truncated model by setting a=0. We generate this truncated normal data below and refer to it as `y_star`.
 
-```{r}
+```{r single_pop_data_gen}
+#loading the package
+library(tcensReg)  
 mu <- 0.5
 sigma <- 0.5
 a <- 0
@@ -85,8 +87,6 @@ ggplot(data=dt, aes(x=y, y=..density..))+
 
 We can then estimate the mean, `mu`, and standard deviation, `sigma`, using `y` with the `tcensReg` package as shown below.
 ```{r message=FALSE}
-#loading the package
-library(tcensReg)  
 tcensReg(y ~ 1, data=dt, a=0, v=0.25)
 ```
 
@@ -188,7 +188,7 @@ results_df$sigma2_bias <- abs(results_df$sigma_2 - sigma_2)
 knitr::kable(results_df, format="markdown", digits=4)
 ```
 
-# Performance Comparison: Censored-Only and Truncated-Only
+# Performance Comparison: Censored-Only and Truncated-Only (Intercept Only Model)
 Note also that the `tcensReg` can also estimate parameters in the censored-only or truncated-only cases. We show below that by using analytic values in the tcensReg implementation that our method is faster then the alternative estimation procedures while providing better variance estimates. With a small set of covariates and `p<<n` we can use the Newton Raphson method of optimization, which is computationally fast with few covariates.
 ```{r speed comparison, message=FALSE, warning=FALSE}
 library(microbenchmark)
@@ -216,42 +216,4 @@ truncreg_est <- as.numeric(coef(truncreg(y_star ~ 1, point=a, data=dt)))
 all.equal(tcensReg_est, truncreg_est)
 ```
 
-In the comparisons above we are using an intercept only model, but in general we
-expect that interest lies in understanding how a set of covariates effect the 
-mean response. So to test the sensitivity and speed as the number of covariates 
-approaches `n` we can generate independent random variables `X` and fit the
-regression model of `Y` or `Y_star`.
 
-We can compare the censored-only and truncated-only performance with 100 predictors, i.e. `p`=20. To illustrate some of the other available optimization methods we will set method to BFGS, which is a quasi-Newton optimization method.
-
-```{r speed_comparison_p20, message=FALSE, warning=FALSE}
-#number of predictors
-p <- 20
-X <- NULL
-for(i in seq_len(p)){
-    X_i <- rnorm(n = length(y))
-    X <- cbind(X, X_i)
-}
-colnames(X) <- paste0("var_", seq_len(p))
-dt <- data.frame(y, X)
-
-#testing the censored-only regression with 100 covariates
-cens <- microbenchmark(tcensReg_method = tcensReg(y ~ ., data=dt, v=nu, method="BFGS"),
-               censReg_method = censReg(y ~ ., left=nu, data=dt))
-knitr::kable(summary(cens), format="markdown", digits=4)
-
-#point estimates are equivalent
-tcensReg_est <- as.numeric(tcensReg(y ~ ., data=dt, v=nu, method="BFGS")$theta)
-censReg_est <- as.numeric(coef(censReg(y ~ ., left=nu, data=dt)))
-all.equal(tcensReg_est, censReg_est)
-
-#testing the truncated-only regression with 100 covariates
-trunc <- microbenchmark(tcensReg_method = tcensReg(y_star ~ ., data=dt, a=a, method="BFGS"),
-                        truncreg_method = truncreg(y_star ~ ., point=a, data=dt))
-knitr::kable(summary(trunc), format="markdown", digits=4)
-tcensReg_est <- as.numeric(tcensReg(y_star ~ ., data=dt, a=a, method="BFGS")$theta)
-#note truncreg returns sigma not log_sigma so we need to exponentiate the last parameter value
-tcensReg_est[length(tcensReg_est)] <- exp(tcensReg_est[length(tcensReg_est)])
-truncreg_est <- as.numeric(coef(truncreg(y_star ~ ., point=a, data=dt)))
-all.equal(tcensReg_est, truncreg_est)
-```
