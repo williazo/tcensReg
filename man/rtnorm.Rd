@@ -4,14 +4,14 @@
 \alias{rtnorm}
 \title{Simulate Random Left-Truncated Normal Distribution}
 \usage{
-rtnorm(n, mu, sigma, a)
+rtnorm(n, mu, sd, a)
 }
 \arguments{
 \item{n}{Numeric scaler representing the number of observations. Must be greater than or equal to 1.}
 
 \item{mu}{Numeric vector of means}
 
-\item{sigma}{Numeric vector of standard deviations.}
+\item{sd}{Numeric vector of standard deviations.}
 
 \item{a}{Numeric vector indicating the left-truncation value.}
 }
@@ -24,4 +24,9 @@ first drawing from a random uniform distribution to generate c.d.f. probabilitie
 }
 \details{
 Note that if the mean \code{mu} is specified as a vector then the standard deviation \code{sigma} must have the same length.
+}
+\examples{
+#zero truncated normal data with mean 0.5 and standard deviation 1
+y_star <- rtnorm(n = 100, mean = 0.5, sd = 1, a = 0)
+
 }

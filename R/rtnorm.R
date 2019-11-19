@@ -10,6 +10,9 @@
 #'
 #' @details Note that if the mean \code{mu} is specified as a vector then the standard deviation \code{sigma} must have the same length.
 #'
+#' @examples
+#' #zero truncated normal data with mean 0.5 and standard deviation 1
+#' y_star <- rtnorm(n = 100, mean = 0.5, sd = 1, a = 0)
 #'
 #' @importFrom stats runif
 #'

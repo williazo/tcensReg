@@ -21,9 +21,8 @@
 #' @importFrom stats model.frame model.matrix
 #'
 #' @examples
-#' library(msm)
 #' #truncated normal underlying data
-#' y_star <- msm::rtnorm(n = 1000, mean = 0.5, sd = 1, lower = 0)
+#' y_star <- rtnorm(n = 1000, mean = 0.5, sd = 1, a = 0)
 #'
 #' #apply censoring
 #' y <- ifelse(y_star <= 0.25, 0.25, y_star)
