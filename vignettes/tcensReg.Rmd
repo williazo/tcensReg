@@ -1,6 +1,8 @@
 ---
-title: "tcensReg"
+title: "tcensReg: An Introduction"
 output: rmarkdown::html_vignette
+date: "`r Sys.Date()`"
+author: "Justin Williams"
 vignette: >
   %\VignetteIndexEntry{tcensReg}
   %\VignetteEngine{knitr::rmarkdown}
