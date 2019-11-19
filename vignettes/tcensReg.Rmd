@@ -10,116 +10,248 @@ vignette: >
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 ```
-# Maximum Likelihood Estimation of a Truncated Normal Distribution with Censored Data
+The goal of this package is to estimate parameters from a linear model when the data comes from a truncated normal distribution with censoring. Maximum likelihood values are returned. There are multiple method availabe for optimzation with the default set as conjugate gradient. This package is also able to return maximum likelihood estimates for truncated only or censored only data similar to `truncreg` and `censReg` packages.
 
-The goal of this package is to estimate parameters from a linear model when the data comes from a truncated normal distribution with censoring. Maximum likelihood values are returned derived from Newton-Raphson algorithm using analytic values of the gradient and hessian. This package is also able to return maximum likelihood estimates for truncated only or censored only data similar to `truncreg` and `censReg` packages.
+# Installation
+You can install `tcensReg` from GitHub via the devtools package with:
 
-## Installation
-You can install ggplot.spaghetti from github via the devtools package with:
-
-```{r eval=FALSE}
+```{r how_to_install, eval=FALSE}
 install.packages("devtools")
 devtools::install_github("williazo/tcensReg")
+#to install the package with the accompaining vignette use the command below
+devtools::install_github("williazo/tcensReg", 
+                         build_opts=c("--no-resave-data", "--no-manual"),
+                         build_vignettes=TRUE)
 ```
-
-
-## Example 1: Single Population
+# Example 1: Single Population
 
 Some common examples where this type of problem may arise is when there is a natural truncation imposed by the structure of the data. For instance several applications have an implied zero truncation such as product lifetimes, age, or detection thresholds. To show how to implement the functions within the package, I will demonstrate a simple simulation example.
 
-Assume that we have observations from an underlying truncated normal distribution 
-
-$Y^{*}\sim\text{TN}(\mu, \sigma^{2}, a)$, 
-
-where $a$ denotes the value of the left-truncation. In our case we will assume a zero-truncated model by setting $a=0$.
+Assume that we have observations from an underlying truncated normal distribution. In our case we will assume a zero-truncated model by setting a=0. We generate this truncated normal data below and refer to it as `y_star`.
 
 ```{r}
-library(msm) #we will use this package to generate random values from the truncated normal distribution
 mu <- 0.5
 sigma <- 0.5
 a <- 0
-
-y_star <- msm::rtnorm(n = 1000, mean = mu, sd = sigma, lower = a)
-range(y_star) #note that the lowerbound will always be non-negative
+#generate random values from the truncated normal distribution using tcensReg function
+y_star <- rtnorm(n=1000, mu=mu, sd=sigma, a=a)
+#note that the lowerbound will always be non-negative
+round(range(y_star), 3)
 ```
 
-Next, we can imagine a scenario where we have an imprecise measurement of $Y^{*}$ leading to censoring. In our case we assume that values below $\nu$ are censored such that $a<\nu$. This creates the random variable $Y$, where
+Next, we can imagine a scenario where we have an imprecise measurement of `y_star` leading to censoring. In our case we assume that values below a limit of detection, `nu`, are censored. This creates a random variable `y`.
 
-$Y_{i}=\nu\big(1_{\{Y_{i}^{*}\le\nu\}}\big)+Y_{i}^{*}\big(1-1_{\{Y_{i}^{*}\le\nu\}}\big)$ and $1_{\{Y_{i}^{*}\le\nu\}}=1$ is $Y_{i}^{*}\le\nu$ and 0 otherwise.
-
-In the example below we set $\nu=0.25$.
+In the example below we set our limit of detection as `nu`=0.25.
 ```{r}
 nu <- 0.25
 y <- ifelse(y_star <= nu, nu, y_star)
-sum(y == nu)/length(y) #calculating the number of censored observations
-dt <- data.frame(y_star, y) #collecting the uncensored and censored data together
-
+#calculating the number of censored observations
+sum(y == nu)/length(y) 
+#collecting the uncensored and censored data together
+dt <- data.frame(y_star, y) 
 ```
 
 We can observe the histogram and density plot for the uncensored data, which shows the zero-truncation.
-```{r echo=FALSE, warning=FALSE, message = FALSE, out.width="40%", fig.align="center"}
+```{r echo=FALSE, warning=FALSE, message=FALSE}
 library(ggplot2)
 library(viridis)
-ggplot(data = dt, aes(x = y_star, y = ..density..))+
-  geom_histogram(binwidth = 0.25, col = viridis(1),fill = viridis(1), alpha = 0.6)+
-  stat_density(bw = 0.5, col = viridis(1), fill = viridis(1), alpha = 0.3)+
-  scale_x_continuous(breaks = seq(0, 2, 0.25))+
+ggplot(data=dt, aes(x=y_star, y=..density..))+
+  geom_histogram(binwidth=0.25, col=viridis(1),fill=viridis(1), alpha=0.6)+
+  stat_density(bw=0.5, col=viridis(1), fill=viridis(1), alpha=0.3)+
+  scale_x_continuous(breaks=seq(0, 2, 0.25))+
   ylab("Density")+
   xlab(expression(Y^"*"))+
-    theme(axis.ticks.y = element_blank(), axis.text.y = element_blank(), panel.grid.major = element_blank(), 
-        panel.background = element_blank(), panel.border = element_rect(fill = NA, color = "black"),
-        axis.text.x = element_text(size = 10), legend.title = element_text(size = 15),
-        legend.text = element_text(size = 15),  legend.key.width = unit(15, units = "mm"), strip.text = element_text(size = 20),
-        axis.title = element_text(size = 20))
+    theme(axis.ticks.y=element_blank(), axis.text.y=element_blank(), panel.grid.major=element_blank(), 
+        panel.background=element_blank(), panel.border=element_rect(fill=NA, color="black"),
+        axis.text.x=element_text(size=10), legend.title=element_text(size=15),
+        legend.text=element_text(size=15),  legend.key.width=unit(15, units="mm"), strip.text=element_text(size=20),
+        axis.title=element_text(size=20))
 ```
-
 
 We can then compare this to the censored observations below
-```{r echo=FALSE, warning=FALSE, message = FALSE, out.width="40%", fig.align="center"}
-library(ggplot2)
-library(viridis)
-ggplot(data = dt, aes(x = y, y = ..density..))+
-  geom_histogram(binwidth = 0.25, col = viridis(1, begin = 0.5),fill = viridis(1, begin = 0.5), alpha = 0.6)+
-  stat_density(bw = 0.25, col = viridis(1, begin = 0.5), fill = viridis(1, begin = 0.5), alpha = 0.3)+
-  scale_x_continuous(breaks = seq(0, 2, 0.25))+
+```{r echo=FALSE, warning=FALSE, message=FALSE}
+ggplot(data=dt, aes(x=y, y=..density..))+
+  geom_histogram(binwidth=0.25, col=viridis(1, begin=0.5),fill=viridis(1, begin=0.5), alpha=0.6)+
+  stat_density(bw=0.25, col=viridis(1, begin=0.5), fill=viridis(1, begin=0.5), alpha=0.3)+
+  scale_x_continuous(breaks=seq(0, 2, 0.25))+
   ylab("Density")+
   xlab(expression(Y))+
-    theme(axis.ticks.y = element_blank(), axis.text.y = element_blank(), panel.grid.major = element_blank(), 
-        panel.background = element_blank(), panel.border = element_rect(fill = NA, color = "black"),
-        axis.text.x = element_text(size = 10), legend.title = element_text(size = 15),
-        legend.text = element_text(size = 15),  legend.key.width = unit(15, units = "mm"), strip.text = element_text(size = 20),
-        axis.title = element_text(size = 20))
+    theme(axis.ticks.y=element_blank(), axis.text.y=element_blank(), panel.grid.major=element_blank(), 
+        panel.background=element_blank(), panel.border=element_rect(fill=NA, color="black"),
+        axis.text.x=element_text(size=10), legend.title=element_text(size=15),
+        legend.text=element_text(size=15),  legend.key.width=unit(15, units="mm"), strip.text=element_text(size=20),
+        axis.title=element_text(size=20))
 ```
 
-We can then estimate $\mu$ and $\sigma$ using our observed $Y$ values with the `tcensReg` package as shown below.
-```{r message = FALSE}
-library(tcensReg)  #loading the package into the current environment
-tcensReg(y ~ 1, data = dt, a = 0, v = 0.25)
+We can then estimate the mean, `mu`, and standard deviation, `sigma`, using `y` with the `tcensReg` package as shown below.
+```{r message=FALSE}
+#loading the package
+library(tcensReg)  
+tcensReg(y ~ 1, data=dt, a=0, v=0.25)
 ```
 
 Note that the this will return parameter estimates, variance-covariance matrix, the number of iterations until convergence, and the initial/final log-likelihood values.
 
 Comparing the values to the truth we see that the estimates are unbiased.
-```{r message = FALSE}
-output <- tcensReg(y ~ 1, data = dt, a = a, v = nu)
-lm_output <- lm(y ~ 1, data = dt) #running OLS model for comparison
-cens_output <- tcensReg(y ~ 1, data = dt, v = nu) #censored only model, i.e., Tobit model
+```{r message=FALSE}
+#tcensReg model
+output <- tcensReg(y ~ 1, data=dt, a=a, v=nu)
+#extracting the point estimates
+tcensReg_est <- output$theta 
+#exponentiating the estimate of log_sigma to obtain sigma
+tcensReg_est[2] <- exp(tcensReg_est[2]) 
 
-tcensReg_est <- output$theta #extracting the point estimates
-tcensReg_est[2] <- exp(tcensReg_est[2]) #exponentiating the estimate of log_sigma to estimate sigma
-
+#OLS model
+lm_output <- lm(y ~ 1, data=dt) 
 lm_est <- c(coef(lm_output), summary(lm_output)$sigma)
-
+#censored only model, i.e., Tobit model
+cens_output <- tcensReg(y ~ 1, data=dt, v=nu) 
 cens_est <- cens_output$theta
 cens_est[2] <- exp(cens_est[2])
 
-results_df <- data.frame(rbind(c(mu, sigma), t(tcensReg_est), lm_est, t(cens_est)))
+
+results_df <- data.frame(rbind(c(mu, sigma),
+                               t(tcensReg_est),
+                               lm_est,
+                               t(cens_est)))
 names(results_df) <- c("mu", "sigma")
 row.names(results_df) <- c("Truth", "tcensReg", "Normal MLE", "Tobit")
 results_df$mu_bias <- abs(results_df$mu - mu)
 results_df$sigma_bias <- abs(results_df$sigma - sigma)
 
-knitr::kable(results_df, format = "markdown", digits = 4)
+knitr::kable(results_df, format="markdown", digits=4)
 ```
-Other methods result in significant bias for both $\mu$ and $\sigma$.
+Other methods result in significant bias for both `mu` and `sigma`.
 
+# Example 2: Two Population Model with Separate Variances
+
+As an extension for the single population model above, we can imagine a two independent truncated normal random variables that have common censoring and truncation values but different standard deviations.
+
+We can simulate the underlying truncated normal distributions `Y1_star` and `Y2_star` similar to $Y$ above except now we allow them to have separate mean and variances.
+
+For this example we let `mu_1`=0.5, `mu_2`=1, `sigma_1`=0.25, `sigma_2`=2, and `a`=0.
+
+```{r gen_twopopdata}
+mu_1 <- 0.5
+mu_2 <- 1
+sigma_1 <- 0.25
+sigma_2 <- 2
+a <- 0
+
+y_1_star <- rtnorm(1000, mu = mu_1, sd = sigma_1, a = a)
+y_2_star <- rtnorm(1000, mu = mu_2, sd = sigma_2, a = a)
+df <- data.frame(y_star = c(y_1_star, y_2_star), 
+                 group = c(rep("Population 1", length(y_1_star)),
+                           rep("Population 2", length(y_2_star))))
+```
+
+Plotting each of these uncensored population densities, we can see the difference in shape based on the underlyig parameter selection.
+
+```{r two_pop_graph,echo=FALSE, warning=FALSE, message = FALSE}
+ggplot(data = df, aes(x = y_star, y = ..density.., group = group, fill = group, col = group))+
+  stat_density(bw = 0.5, alpha = 0.3)+
+  ylab("Density")+
+  xlab(expression(Y^"*"))+
+  geom_vline(xintercept = 0.5, lty = 2, col = viridis(1, begin = 0.25))+
+  geom_vline(xintercept = 1, lty = 2, col = viridis(1, begin = 0))+
+  scale_color_manual(name = "", values = viridis(2, begin = 0.25, end = 0))+
+  scale_fill_manual(name = "", values = viridis(2, begin = 0.25, end = 0))+
+    theme(axis.ticks.y = element_blank(), axis.text.y = element_blank(), panel.grid.major = element_blank(), 
+        panel.background = element_blank(), panel.border = element_rect(fill = NA, color = "black"),
+        axis.text.x = element_text(size = 10), legend.title = element_text(size = 15),
+        legend.text = element_text(size = 15),  legend.key.width = unit(15, units = "mm"), strip.text = element_text(size = 20),
+        axis.title = element_text(size = 20))
+```
+
+Then censoring each obseration at `nu`, we are left with `Y1` and `Y2`. Again, we let `nu`=0.25.
+```{r two_pop_censoring}
+nu <- 0.25
+df$y <- ifelse(df$y_star<=nu, nu, df$y_star)
+```
+
+We then can fit our model with separate variances for each group using the command `tcensReg_sepvar` as shown below.
+```{r fit_sepvarmod}
+mod_result <- tcensReg_sepvar(y ~ group, a=a, v=nu, group_var="group", method="maxLik", data=df)
+mod_result
+sepvar_est <- mod_result$theta
+sepvar_est[3:4] <- exp(sepvar_est[3:4])
+
+results_df <- data.frame(rbind(c(mu_1, mu_2, sigma_1, sigma_2),
+                               t(sepvar_est)))
+names(results_df) <- c("mu_1", "mu_2", "sigma_1", "sigma_2")
+row.names(results_df) <- c("Truth", "tcensReg")
+results_df$mu1_bias <- abs(results_df$mu_1 - mu_1)
+results_df$mu2_bias <- abs(results_df$mu_2 - mu_2)
+results_df$sigma1_bias <- abs(results_df$sigma_1 - sigma_1)
+results_df$sigma2_bias <- abs(results_df$sigma_2 - sigma_2)
+
+knitr::kable(results_df, format="markdown", digits=4)
+```
+
+# Performance Comparison: Censored-Only and Truncated-Only
+Note also that the `tcensReg` can also estimate parameters in the censored-only or truncated-only cases. We show below that by using analytic values in the tcensReg implementation that our method is faster then the alternative estimation procedures while providing better variance estimates. With a small set of covariates and `p<<n` we can use the Newton Raphson method of optimization, which is computationally fast with few covariates.
+```{r speed comparison, message=FALSE, warning=FALSE}
+library(microbenchmark)
+#testing the censored-only regression
+library(censReg)
+cens <- microbenchmark(tcensReg_method = tcensReg(y ~ 1, data=dt, v=nu, method="Newton"),
+               censReg_method = censReg(y ~ 1, left=nu, data=dt))
+knitr::kable(summary(cens), format="markdown", digits=4)
+
+#point estimates are equivalent
+tcensReg_est <- as.numeric(tcensReg(y ~ 1, data=dt, v=nu, method="Newton")$theta)
+censReg_est <- as.numeric(coef(censReg(y ~ 1, left=nu, data=dt)))
+all.equal(tcensReg_est, censReg_est)
+
+#testing the truncated-only regression
+library(truncreg)
+trunc <- microbenchmark(
+  tcensReg_method = tcensReg(y_star ~ 1, data=dt, a=a, method="Newton"),
+  truncreg_method = truncreg(y_star ~ 1, point=a, data=dt))
+knitr::kable(summary(trunc), format="markdown", digits=4)
+tcensReg_est <- as.numeric(tcensReg(y_star ~ 1, data=dt, a=a, method="Newton")$theta)
+#note truncreg returns sigma not log_sigma so we need to exponentiate our value
+tcensReg_est[2] <- exp(tcensReg_est[2])
+truncreg_est <- as.numeric(coef(truncreg(y_star ~ 1, point=a, data=dt)))
+all.equal(tcensReg_est, truncreg_est)
+```
+
+In the comparisons above we are using an intercept only model, but in general we
+expect that interest lies in understanding how a set of covariates effect the 
+mean response. So to test the sensitivity and speed as the number of covariates 
+approaches `n` we can generate independent random variables `X` and fit the
+regression model of `Y` or `Y_star`.
+
+We can compare the censored-only and truncated-only performance with 100 predictors, i.e. `p`=20. To illustrate some of the other available optimization methods we will set method to BFGS, which is a quasi-Newton optimization method.
+
+```{r speed_comparison_p20, message=FALSE, warning=FALSE}
+#number of predictors
+p <- 20
+X <- NULL
+for(i in seq_len(p)){
+    X_i <- rnorm(n = length(y))
+    X <- cbind(X, X_i)
+}
+colnames(X) <- paste0("var_", seq_len(p))
+dt <- data.frame(y, X)
+
+#testing the censored-only regression with 100 covariates
+cens <- microbenchmark(tcensReg_method = tcensReg(y ~ ., data=dt, v=nu, method="BFGS"),
+               censReg_method = censReg(y ~ ., left=nu, data=dt))
+knitr::kable(summary(cens), format="markdown", digits=4)
+
+#point estimates are equivalent
+tcensReg_est <- as.numeric(tcensReg(y ~ ., data=dt, v=nu, method="BFGS")$theta)
+censReg_est <- as.numeric(coef(censReg(y ~ ., left=nu, data=dt)))
+all.equal(tcensReg_est, censReg_est)
+
+#testing the truncated-only regression with 100 covariates
+trunc <- microbenchmark(tcensReg_method = tcensReg(y_star ~ ., data=dt, a=a, method="BFGS"),
+                        truncreg_method = truncreg(y_star ~ ., point=a, data=dt))
+knitr::kable(summary(trunc), format="markdown", digits=4)
+tcensReg_est <- as.numeric(tcensReg(y_star ~ ., data=dt, a=a, method="BFGS")$theta)
+#note truncreg returns sigma not log_sigma so we need to exponentiate the last parameter value
+tcensReg_est[length(tcensReg_est)] <- exp(tcensReg_est[length(tcensReg_est)])
+truncreg_est <- as.numeric(coef(truncreg(y_star ~ ., point=a, data=dt)))
+all.equal(tcensReg_est, truncreg_est)
+```
