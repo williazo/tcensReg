@@ -22,7 +22,10 @@ Suggests:
     ggplot2,
     viridis,
     future.apply,
-    tictoc
+    tictoc,
+    censReg,
+    truncreg,
+    microbenchmark
 VignetteBuilder: knitr
 BugReports: https://github.com/williazo/tcensReg/issues
 URL: https://github.com/williazo/tcensReg
