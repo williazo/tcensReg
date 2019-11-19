@@ -15,7 +15,7 @@
 #' @param max_iter Numeric value indicating the maximum number of iterations to perform.
 #' @param ... Additional arguments from \code{\link{tcensReg_newton}} such as \code{max_iter}, \code{step_max}, or \code{epsilon}.
 #'
-#' @importFrom stats model.frame model.matrix
+#' @importFrom stats model.frame model.matrix sd vcov
 #' @importFrom maxLik maxLik
 #'
 #' @details

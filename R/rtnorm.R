@@ -12,9 +12,9 @@
 #'
 #' @examples
 #' #zero truncated normal data with mean 0.5 and standard deviation 1
-#' y_star <- rtnorm(n = 100, mean = 0.5, sd = 1, a = 0)
+#' y_star <- rtnorm(n = 100, mu = 0.5, sd = 1, a = 0)
 #'
-#' @importFrom stats runif
+#' @importFrom stats runif qnorm pnorm
 #'
 #' @return Returns a vector of samples drawn from the specified distribition.
 #'

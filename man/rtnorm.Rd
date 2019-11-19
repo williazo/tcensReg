@@ -27,6 +27,6 @@ Note that if the mean \code{mu} is specified as a vector then the standard devia
 }
 \examples{
 #zero truncated normal data with mean 0.5 and standard deviation 1
-y_star <- rtnorm(n = 100, mean = 0.5, sd = 1, a = 0)
+y_star <- rtnorm(n = 100, mu = 0.5, sd = 1, a = 0)
 
 }
