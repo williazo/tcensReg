@@ -6,7 +6,7 @@
 ## Produced:    July-August 2018
 #################################
 #installing and loading the needed packages
-list.of.packages <- c("msm", "devtools", "tictoc", "future.apply", "truncreg")
+list.of.packages <- c("devtools", "tictoc", "future.apply")
 new.packages <- list.of.packages[!(list.of.packages %in% installed.packages()[,"Package"])]
 if(length(new.packages)) install.packages(new.packages)
 lapply(list.of.packages, require, character.only = T)
@@ -63,8 +63,8 @@ cens_diff_sim_noninf <- function(rand_seed, mu1_vec, non_inf_margin, sd_vec, n1,
   ls_dt <- future.apply::future_lapply(1:B, function(num_reps){ #looping the function over the number of replicates
     lapply(sd_vec, function(s){ #applying over the number of different standard deviation values
       lapply(1:nrow(beta), function(x){ #each row of beta matrix represents a unique mu1, mu2 combination
-        y_star_1 <- msm::rtnorm(n = n1, mean = unname(beta[x, 1]), sd = s, lower = a) #oversampling from a normal distribution
-        y_star_2 <- msm::rtnorm(n = n2, mean = sum(beta[x, ]), sd = s, lower = a)
+        y_star_1 <- rtnorm(n = n1, mean = unname(beta[x, 1]), sd = s, a = a) #oversampling from a normal distribution
+        y_star_2 <- rtnorm(n = n2, mean = sum(beta[x, ]), sd = s, a = a)
         y_star <- c(y_star_1, y_star_2)
         y_dl <- cens_method(y_star, method = "DL", tobit_val)
         y_dl_half <- cens_method(y_star, method = "DL_half", tobit_val)

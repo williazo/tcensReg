@@ -6,7 +6,7 @@
 ## Produced:    July-August 2018
 #################################
 #installing and loading the needed packages
-.list.of.packages <- c("msm", "devtools", "tictoc", "future.apply")
+.list.of.packages <- c("devtools", "tictoc", "future.apply")
 .new.packages <- .list.of.packages[!(.list.of.packages %in% installed.packages()[,"Package"])]
 if(length(.new.packages)) install.packages(.new.packages)
 sapply(.list.of.packages, require, character.only = T)
@@ -61,7 +61,7 @@ cens_diff_sim <- function(rand_seed, mu1_vec, true_diff, sd_vec, n1, n2, B, tobi
   ls_dt <- future.apply::future_lapply(1:B, function(B){ #looping the function over the number of replicates
     lapply(sd_vec, function(s){ #applying over the number of different standard deviation values
       lapply(1:ncol(Xb), function(x){ #each column of Xb represents a unique mu1, mu2 combination
-        y_star = msm::rtnorm(n = n1 + n2, mean = Xb[, x], sd = s, lower = a)
+        y_star = rtnorm(n = n1 + n2, mean = Xb[, x], sd = s, a = a)
         y_dl <- cens_method(y_star, method = "DL", tobit_val)
         y_dl_half <- cens_method(y_star, method = "DL_half", tobit_val)
         y_tobit <- cens_method(y_star, method = "Tobit", tobit_val)
