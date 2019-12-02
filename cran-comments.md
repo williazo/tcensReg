@@ -1,4 +1,9 @@
 Date: 12/2/2019
+### Re-submission
+This is a resubmission of tcensReg 0.1.1.9000 to tcensReg 0.1.2. In this version I have:
+ + updated version numbering to eliminate large components, i.e. .9000.
+ + added CITATION information in directory inst/CITATION with references on the methodology published on arXiv
+
 ## Test environments
 + local OS X install (macOS Catalina 10.15.1), R version 3.6.1
 + win-builder (devel & release)
