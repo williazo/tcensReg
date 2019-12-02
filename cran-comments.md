@@ -1,24 +1,21 @@
-Date: 11/18/2019
+Date: 12/2/2019
 ## Test environments
 + local OS X install (macOS Catalina 10.15.1), R version 3.6.1
-+ win-builder (waiting to run)
++ win-builder (devel & release)
 
-## R CMD check --as-cran results
+### local OS X results
+R CMD check --as-cran
 There were no ERRORs or WARNINGs and 1 NOTE in local environments
 
-1. Non-standard file/directory found at top level:
-    'README_files'
+1. Maintainer: ‘Justin Williams <williazo@ucla.edu>’
+New submission
 
-*Response:* I use the README_files directory to store images used in README.MD for people accessing via GitHub as
-the illustrations help show the data generating mechanism.
+*Response:* This is a new package submission.
 
-devel/release win-builder identical 2 NOTEs shown below
+### win-builder devel & release results
+There were no ERRORs or WARNINGs and 1 NOTE
 
-1.  Non-standard file/directory found at top level:
-    'README_files'
-
-I use the README_files directory to store images used in README.MD for people accessing via GitHub as
-the illustrations help show the data generating mechanism.
+*Response:* Same note as above
 
 ## Downstream dependencies
 There are currently no downstream dependencies for this package
