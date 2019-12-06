@@ -1,11 +1,11 @@
 Package: tcensReg
-Title: Maximum Likelihood Estimation of a Truncated Normal Distribution with Censored Data
-Version: 0.1.2
+Title: MLE of a Truncated Normal Distribution with Censored Data
+Version: 0.1.3
 Authors@R:
     person(given = "Justin",
            family = "Williams",
            email = "williazo@ucla.edu", role = c("aut", "cre"))
-Description: Estimates parameters using maximum likelihood methods assuming an underlying left truncated normal distribution with left censoring. Censoring is assumed to occur above the truncation threshold meaning that only censored observations are observed. Additional maximum likelihood estimation procedures are implemented to solve left censored only and left truncated only problems.
+Description: Maximum likelihood estimation (MLE) of parameters assuming an underlying left truncated normal distribution with left censoring described in Williams, J, Kim, H, and Crespi, C. (2019) <arXiv:1911.11221>. Censoring is assumed to occur above the truncation threshold meaning that only censored observations are observed. Additional maximum likelihood estimation procedures are implemented to solve left censored only and left truncated only problems.
 Depends: 
     R (>= 3.3)
 License: MIT + file LICENSE
