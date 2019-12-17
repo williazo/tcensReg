@@ -1,8 +1,8 @@
-Date: 12/6/2019
+Date: 12/17/2019
 ### Re-submission
-This is a resubmission of tcensReg 0.1.2. to tcensReg 0.1.3 In this version I have:
- + shortened the title to 65 characters
- + added reference in the DESCRIPTION for methods paper
+This is a resubmission of tcensReg 0.1.3 to tcensReg 0.1.4 In this version I have:
+ + removed inst/script/* files from the Rbuild. These were codes run in the simulation for the manuscript using the package, but are unnecessary for the package. I will retain access to them on the GitHub page but ignore them for the .tar.gz build.
+
 
 ## Test environments
 + local OS X install (macOS Catalina 10.15.1), R version 3.6.1
