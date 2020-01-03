@@ -9,21 +9,22 @@ rtnorm(n, mu, sd, a)
 \arguments{
 \item{n}{Numeric scaler representing the number of observations. Must be greater than or equal to 1.}
 
-\item{mu}{Numeric vector of means}
+\item{mu}{Mean value of the underlying normal random variable}
 
-\item{sd}{Numeric vector of standard deviations.}
+\item{sd}{Standard deviation of underlying normal random variable}
 
 \item{a}{Numeric vector indicating the left-truncation value.}
 }
 \value{
-Returns a vector of samples drawn from the specified distribition.
+Returns a vector of samples drawn from the specified distribition eqaul to length n.
 }
 \description{
 This function is used to generate random samples from left-truncated normal distribution with specified mean and variance. Sampling is performed by
 first drawing from a random uniform distribution to generate c.d.f. probabilities and then the inverse density function is applied to generate observations.
 }
 \details{
-Note that if the mean \code{mu} is specified as a vector then the standard deviation \code{sigma} must have the same length.
+Note that if the mean \code{mu} is specified as a vector then the standard deviation
+\code{sigma} must have the same length or be a scalar indicating that all samples have constant standard deviation.
 }
 \examples{
 #zero truncated normal data with mean 0.5 and standard deviation 1
