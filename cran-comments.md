@@ -1,8 +1,6 @@
-Date: 12/17/2019
-### Re-submission
-This is a resubmission of tcensReg 0.1.3 to tcensReg 0.1.4 In this version I have:
- + removed inst/script/* files from the Rbuild. These were codes run in the simulation for the manuscript using the package, but are unnecessary for the package. I will retain access to them on the GitHub page but ignore them for the .tar.gz build.
-
+Date: 01/03/2020
+### Version Update 0.1.5
+This is an update to the current release version 0.1.4 on CRAN. See NEWS file for details on updates.
 
 ## Test environments
 + local OS X install (macOS Catalina 10.15.1), R version 3.6.1
@@ -10,17 +8,10 @@ This is a resubmission of tcensReg 0.1.3 to tcensReg 0.1.4 In this version I hav
 
 ### local OS X results
 R CMD check --as-cran
-There were no ERRORs or WARNINGs and 1 NOTE in local environments
-
-1. Maintainer: ‘Justin Williams <williazo@ucla.edu>’
-New submission
-
-*Response:* This is a new package submission.
+There were no ERRORs, WARNINGs or NOTEs in local environments
 
 ### win-builder devel & release results
-There were no ERRORs or WARNINGs and 1 NOTE
-
-*Response:* Same note as above
+There were no ERRORs, WARNINGs, or NOTEs
 
 ## Downstream dependencies
 There are currently no downstream dependencies for this package

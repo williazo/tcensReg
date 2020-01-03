@@ -1,2 +1,7 @@
+version 0.1.5 (2020-01-03)
+	+ updates to rtnorm() function to correct errors with vector values mean and scalar
+	+ adding in inst/script function into CRAN version after updating future_lapply() and package installation
+	+ updates to vignette for installation guide for CRAN
+
 version 0.1.4: (2019-12-18)
 	+ package accepted into CRAN repository

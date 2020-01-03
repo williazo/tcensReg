@@ -1,6 +1,6 @@
 Package: tcensReg
 Title: MLE of a Truncated Normal Distribution with Censored Data
-Version: 0.1.4
+Version: 0.1.5
 Authors@R:
     person(given = "Justin",
            family = "Williams",
