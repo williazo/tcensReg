@@ -6,19 +6,12 @@
 ## Produced:    July-August 2018
 #################################
 #installing and loading the needed packages
-list.of.packages <- c("devtools", "tictoc", "future.apply")
-new.packages <- list.of.packages[!(list.of.packages %in% installed.packages()[,"Package"])]
-if(length(new.packages)) install.packages(new.packages)
-lapply(list.of.packages, require, character.only = T)
-rm(new.packages, list.of.packages)
+.list.of.packages <- c("devtools", "tictoc", "future.apply", "tcensReg")
+lapply(.list.of.packages, function(x) if(!requireNamespace(x, quietly=TRUE)) install.packages(x))
+lapply(.list.of.packages, require, character.only=TRUE, quietly=TRUE)
 
 #enabling parallel processing
-future::plan(multiprocess)
-
-#installing the package for estimating truncated with censoring from GitHub page
-devtools::install_github("williazo/tcensReg")
-#my own package that is used to estimate censored only, truncated only, and truncated with censoring parameters
-library(tcensReg)
+future::plan(multisession)
 
 #function for censoring the data based on 12.0 CPD specifications
 cens_method <- function(x, method, tobit_val){
@@ -49,15 +42,14 @@ contrast_sens_sim_tnorm <- function(rand_seed, obs, B, mu_vec, sd_vec, tobit_val
 
   #generating random normal data and cutting off the censored observations according to the appropriate method
   csf_dat_tnorm <- function(n, mu, sd, reps){
-    future.apply::future_lapply(1:B, function(B){
-
-      y_star <- rtnorm(n, mu, sd, a)
-      y_dl   <- cens_method(y_star, "DL", tobit_val)
-      y_dl_half    <- cens_method(y_star, "DL_half", tobit_val)
-      y_tobit <- cens_method(y_star, "Tobit", tobit_val)
-      cens_ind <- ifelse(y_tobit == tobit_val, TRUE, FALSE)
-      dat <- data.frame(y_star, y_dl, y_dl_half, y_tobit, cens_ind)
-      return(dat)})
+    future.apply::future_lapply(seq_len(B), function(B){
+      y_star    <- tcensReg::rtnorm(n, mu, sd, a)
+      y_dl      <- cens_method(y_star, "DL", tobit_val)
+      y_dl_half <- cens_method(y_star, "DL_half", tobit_val)
+      y_tobit   <- cens_method(y_star, "Tobit", tobit_val)
+      cens_ind  <- ifelse(y_tobit == tobit_val, TRUE, FALSE)
+      dat       <- data.frame(y_star, y_dl, y_dl_half, y_tobit, cens_ind)
+      return(dat)}, future.seed=rand_seed)
   }
 
   #generating data for the CSF simulation parameters
@@ -273,7 +265,7 @@ contrast_sens_sim_tnorm <- function(rand_seed, obs, B, mu_vec, sd_vec, tobit_val
 }
 
 tictoc::tic()
-tnorm_results <- contrast_sens_sim_tnorm(rand_seed = 123580, obs = 100, B = 1000, mu_vec = seq(0.7, 1.1, 0.1),
+tnorm_results <- contrast_sens_sim_tnorm(rand_seed = 123580, obs = 100, B = 10000, mu_vec = seq(0.7, 1.1, 0.1),
                                          sd_vec = c(0.4, 0.45, 0.5), tobit_val = 0.61, a = 0)
 tictoc::toc()
 # parallization is done locally using 4 cores

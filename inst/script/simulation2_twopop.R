@@ -6,17 +6,12 @@
 ## Produced:    July-August 2018
 #################################
 #installing and loading the needed packages
-.list.of.packages <- c("devtools", "tictoc", "future.apply")
-.new.packages <- .list.of.packages[!(.list.of.packages %in% installed.packages()[,"Package"])]
-if(length(.new.packages)) install.packages(.new.packages)
-sapply(.list.of.packages, require, character.only = T)
+.list.of.packages <- c("devtools", "tictoc", "future.apply", "tcensReg")
+lapply(.list.of.packages, function(x) if(!requireNamespace(x, quietly=TRUE)) install.packages(x))
+lapply(.list.of.packages, require, character.only=TRUE, quietly=TRUE)
 
 #enabling parallel processing
-future::plan(multiprocess)
-
-#installing the package for estimating truncated with censoring from GitHub page
-devtools::install_github("williazo/tcensReg")
-library(tcensReg) #my own package that is used to estimate censored only, truncated only, and truncated with censoring parameters
+future::plan(multisession)
 
 #function for censoring the data based on 12.0 CPD specifications
 cens_method <- function(x, method, tobit_val){
@@ -58,17 +53,17 @@ cens_diff_sim <- function(rand_seed, mu1_vec, true_diff, sd_vec, n1, n2, B, tobi
   beta_1 <- true_diff
   beta <- cbind(beta_0 = rep(beta_0, each = num_diff), beta_1 = rep(true_diff, num_mu1))
   Xb <- X%*%t(beta)
-  ls_dt <- future.apply::future_lapply(1:B, function(B){ #looping the function over the number of replicates
+  ls_dt <- future.apply::future_lapply(seq_len(B), function(B){ #looping the function over the number of replicates
     lapply(sd_vec, function(s){ #applying over the number of different standard deviation values
-      lapply(1:ncol(Xb), function(x){ #each column of Xb represents a unique mu1, mu2 combination
-        y_star = rtnorm(n = n1 + n2, mean = Xb[, x], sd = s, a = a)
-        y_dl <- cens_method(y_star, method = "DL", tobit_val)
+      lapply(seq_len(ncol(Xb)), function(x){ #each column of Xb represents a unique mu1, mu2 combination
+        y_star    <- tcensReg::rtnorm(n = n1 + n2, mu = Xb[, x], sd = s, a = a)
+        y_dl      <- cens_method(y_star, method = "DL", tobit_val)
         y_dl_half <- cens_method(y_star, method = "DL_half", tobit_val)
-        y_tobit <- cens_method(y_star, method = "Tobit", tobit_val)
-        cens_ind <- ifelse(y_tobit == tobit_val, 1, 0)
-        group <- c(rep(0, n1), rep(1, n2))
+        y_tobit   <- cens_method(y_star, method = "Tobit", tobit_val)
+        cens_ind  <- ifelse(y_tobit == tobit_val, 1, 0)
+        group     <- c(rep(0, n1), rep(1, n2))
         data.frame(y_star, y_dl, y_dl_half, y_tobit, cens_ind, group)
-      })})})
+      })})}, future.seed=rand_seed)
   dt <- array(unlist(ls_dt), dim = c(n1+n2, 6, nrow(beta), num_sd, B),
               dimnames = list(NULL, c("y_star","y_dl", "y_dl_half", "y_tobit", "cens_ind", "group"), NULL, NULL, NULL))
   #dt is a large array containing all of the different vector values

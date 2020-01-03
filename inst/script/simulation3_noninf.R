@@ -6,18 +6,12 @@
 ## Produced:    July-August 2018
 #################################
 #installing and loading the needed packages
-list.of.packages <- c("devtools", "tictoc", "future.apply")
-new.packages <- list.of.packages[!(list.of.packages %in% installed.packages()[,"Package"])]
-if(length(new.packages)) install.packages(new.packages)
-lapply(list.of.packages, require, character.only = T)
-rm(new.packages, list.of.packages)
+.list.of.packages <- c("devtools", "tictoc", "future.apply", "tcensReg")
+lapply(.list.of.packages, function(x) if(!requireNamespace(x, quietly=TRUE)) install.packages(x))
+vapply(.list.of.packages, require, character.only=TRUE, quietly=TRUE)
 
 #enabling parallel processing
-future::plan(multiprocess)
-
-#installing the package for estimating truncated with censoring from GitHub page
-devtools::install_github("williazo/tcensReg")
-library(tcensReg) #my own package that is used to estimate censored only, truncated only, and truncated with censoring parameters
+future::plan(multisession())
 
 #function for censoring the data based on 12.0 CPD specifications
 cens_method <- function(x, method, tobit_val){
@@ -60,19 +54,19 @@ cens_diff_sim_noninf <- function(rand_seed, mu1_vec, non_inf_margin, sd_vec, n1,
   # max_trunc_prob <- pnorm(a, mean = min(mu2_vec), sd = max(sd_vec), lower.tail = TRUE)
 
   set.seed(rand_seed)
-  ls_dt <- future.apply::future_lapply(1:B, function(num_reps){ #looping the function over the number of replicates
+  ls_dt <- future.apply::future_lapply(seq_len(B), function(num_reps){ #looping the function over the number of replicates
     lapply(sd_vec, function(s){ #applying over the number of different standard deviation values
       lapply(1:nrow(beta), function(x){ #each row of beta matrix represents a unique mu1, mu2 combination
-        y_star_1 <- rtnorm(n = n1, mean = unname(beta[x, 1]), sd = s, a = a) #oversampling from a normal distribution
-        y_star_2 <- rtnorm(n = n2, mean = sum(beta[x, ]), sd = s, a = a)
-        y_star <- c(y_star_1, y_star_2)
-        y_dl <- cens_method(y_star, method = "DL", tobit_val)
+        y_star_1  <- tcensReg::rtnorm(n = n1, mu = unname(beta[x, 1]), sd = s, a = a) #oversampling from a normal distribution
+        y_star_2  <- tcensReg::rtnorm(n = n2, mu = sum(beta[x, ]), sd = s, a = a)
+        y_star    <- c(y_star_1, y_star_2)
+        y_dl      <- cens_method(y_star, method = "DL", tobit_val)
         y_dl_half <- cens_method(y_star, method = "DL_half", tobit_val)
-        y_tobit <- cens_method(y_star, method = "Tobit", tobit_val)
-        cens_ind <- ifelse(y_tobit == tobit_val, 1, 0)
+        y_tobit   <- cens_method(y_star, method = "Tobit", tobit_val)
+        cens_ind  <- ifelse(y_tobit == tobit_val, 1, 0)
         group <- c(rep(0, n1), rep(1, n2))
         data.frame(y_star, y_dl, y_dl_half, y_tobit, cens_ind, group)
-      })})})
+      })})}, future.seed=rand_seed)
   dt <- array(unlist(ls_dt), dim = c(n1+n2, 6, nrow(beta), num_sd, B),
               dimnames = list(NULL, c("y_star","y_dl", "y_dl_half", "y_tobit", "cens_ind", "group"), NULL, NULL, NULL))
   #dt is a large array containing all of the different vector values
