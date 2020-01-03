@@ -15,11 +15,19 @@ knitr::opts_chunk$set(echo = TRUE)
 The goal of this package is to estimate parameters from a linear model when the data comes from a truncated normal distribution with censoring. Maximum likelihood values are returned. There are multiple method available for optimization with the default set as conjugate gradient. This package is also able to return maximum likelihood estimates for truncated only or censored only data similar to `truncreg` and `censReg` packages.
 
 # Installation
-You can install `tcensReg` from CRAN:
+You can install `tcensReg` from CRAN for the stable release or install the GitHub verion for the active development version:
 
 ```{r how_to_install, eval=FALSE}
+#stable CRAN version
 install.packages("tcensReg")
+
+# or ----
+
+#active devel. GitHub version
+install.packages("devtools")
+devtools::install_github("williazo/tcensReg")
 ```
+
 # Example 1: Single Population
 
 Some common examples where this type of problem may arise is when there is a natural truncation imposed by the structure of the data. For instance several applications have an implied zero truncation such as product lifetimes, age, or detection thresholds. To show how to implement the functions within the package, I will demonstrate a simple simulation example.
