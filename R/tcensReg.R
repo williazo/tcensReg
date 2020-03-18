@@ -91,5 +91,11 @@ tcensReg <- function(formula, a = -Inf, v = NULL, data = sys.frame(sys.parent())
         results <- tcensReg_optim(y, X, a, v, method, ...)
     }
 
+    #adding in information criterion into the results
+    aic <- (2 * length(results$theta)) - (2 * results$final_ll)
+    bic <- log(length(y)) * length(results$theta) - 2 * results$final_ll
+    info_criteria <- c(AIC=aic, BIC=bic)
+    results[["info_criteria"]] <- info_criteria
+
     return(results)
 }
