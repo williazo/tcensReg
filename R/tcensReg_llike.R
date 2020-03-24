@@ -12,7 +12,7 @@
 #'
 #' @importFrom stats dnorm pnorm
 #' @export
-#'
+#' @keywords internal
 #' @return Scalar value of the log-likelihood at the nth iterate
 
 tcensReg_llike <- function(theta, y, X, a = -Inf, v = NULL){
