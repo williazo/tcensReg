@@ -11,10 +11,6 @@ vignette: >
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
-knitr::opts_chunk$set(echo=TRUE)
-library(tcensReg)
-library(ggplot2)
-library(viridis)
 ```
 The goal of this package is to estimate parameters from a linear model when the data comes from a truncated normal distribution with censoring. Maximum likelihood values are returned. There are multiple method available for optimization with the default set as conjugate gradient. This package is also able to return maximum likelihood estimates for truncated only or censored only data similar to `truncreg` and `censReg` packages.
 
@@ -39,12 +35,11 @@ Some common examples where this type of problem may arise is when there is a nat
 Assume that we have observations from an underlying truncated normal distribution. In our case we will assume a zero-truncated model by setting a=0. We generate this truncated normal data below and refer to it as `y_star`.
 
 ```{r single_pop_data_gen}
-library(tcensReg)
+#loading the package
+library(tcensReg)  
 mu <- 0.5
 sigma <- 0.5
 a <- 0
-
-set.seed(032420)
 #generate random values from the truncated normal distribution using tcensReg function
 y_star <- rtnorm(n=1000, mu=mu, sd=sigma, a=a)
 #note that the lowerbound will always be non-negative
@@ -54,7 +49,7 @@ round(range(y_star), 3)
 Next, we can imagine a scenario where we have an imprecise measurement of `y_star` leading to censoring. In our case we assume that values below a limit of detection, `nu`, are censored. This creates a random variable `y`.
 
 In the example below we set our limit of detection as `nu`=0.25.
-```{r univariate_cens}
+```{r}
 nu <- 0.25
 y <- ifelse(y_star <= nu, nu, y_star)
 #calculating the number of censored observations
@@ -64,7 +59,9 @@ dt <- data.frame(y_star, y)
 ```
 
 We can observe the histogram and density plot for the uncensored data, which shows the zero-truncation.
-```{r univariate_cens_plot, echo=FALSE, warning=FALSE, message=FALSE, fig.align='center',fig.height=4, fig.width=6,tidy=FALSE}
+```{r echo=FALSE, warning=FALSE, message=FALSE, fig.align='center',fig.height=4, fig.width=6,tidy=FALSE}
+library(ggplot2)
+library(viridis)
 ggplot(data=dt, aes(x=y_star, y=..density..))+
   geom_histogram(binwidth=0.25, col=viridis(1),fill=viridis(1), alpha=0.6)+
   stat_density(bw=0.5, col=viridis(1), fill=viridis(1), alpha=0.3)+
@@ -79,7 +76,7 @@ ggplot(data=dt, aes(x=y_star, y=..density..))+
 ```
 
 We can then compare this to the censored observations below
-```{r univariate_uncens_plot, echo=FALSE, warning=FALSE, message=FALSE, fig.align='center',fig.height=4, fig.width=6,tidy=FALSE}
+```{r echo=FALSE, warning=FALSE, message=FALSE, fig.align='center',fig.height=4, fig.width=6,tidy=FALSE}
 ggplot(data=dt, aes(x=y, y=..density..))+
   geom_histogram(binwidth=0.25, col=viridis(1, begin=0.5),fill=viridis(1, begin=0.5), alpha=0.6)+
   stat_density(bw=0.25, col=viridis(1, begin=0.5), fill=viridis(1, begin=0.5), alpha=0.3)+
@@ -94,33 +91,29 @@ ggplot(data=dt, aes(x=y, y=..density..))+
 ```
 
 We can then estimate the mean, `mu`, and standard deviation, `sigma`, using `y` with the `tcensReg` package as shown below.
-```{r t_mod_est, message=FALSE}
-#loading the package
-library(tcensReg)  
-t_mod <- tcensReg(y ~ 1, data=dt, a=0, v=0.25)
-t_mod
+```{r message=FALSE}
+tcensReg(y ~ 1, data=dt, a=0, v=0.25)
 ```
 
-By default the coefficients are returned along with log likelihood and other fit criterion statistics. Note that the Psuedo R2 in the case of an intercept only model is exactly equal to zero.
-
-```{r t_mod_full_print}
-names(t_mod)
-```
-Note that the this object contains parameter estimates theta, convergence criterion code, initial/final log-liklihood values, variance-covariance matrix, method of optimization, information criterion and the design matrix used from the model.
+Note that the this will return parameter estimates, variance-covariance matrix, the number of iterations until convergence, and the initial/final log-likelihood values.
 
 Comparing the values to the truth we see that the estimates are unbiased.
-```{r t_mod_est_compare, message=FALSE}
+```{r message=FALSE}
 #tcensReg model
 output <- tcensReg(y ~ 1, data=dt, a=a, v=nu)
 #extracting the point estimates
-tcensReg_est <- coef(output) #this returns sigma rather than log sigma
+tcensReg_est <- output$theta 
+#exponentiating the estimate of log_sigma to obtain sigma
+tcensReg_est[2] <- exp(tcensReg_est[2]) 
 
 #OLS model
 lm_output <- lm(y ~ 1, data=dt) 
 lm_est <- c(coef(lm_output), summary(lm_output)$sigma)
 #censored only model, i.e., Tobit model
 cens_output <- tcensReg(y ~ 1, data=dt, v=nu) 
-cens_est <- coef(cens_output)
+cens_est <- cens_output$theta
+cens_est[2] <- exp(cens_est[2])
+
 
 results_df <- data.frame(rbind(c(mu, sigma),
                                t(tcensReg_est),
@@ -128,8 +121,8 @@ results_df <- data.frame(rbind(c(mu, sigma),
                                t(cens_est)))
 names(results_df) <- c("mu", "sigma")
 row.names(results_df) <- c("Truth", "tcensReg", "Normal MLE", "Tobit")
-results_df$mu_bias <- results_df$mu - mu
-results_df$sigma_bias <- results_df$sigma - sigma
+results_df$mu_bias <- abs(results_df$mu - mu)
+results_df$sigma_bias <- abs(results_df$sigma - sigma)
 
 knitr::kable(results_df, format="markdown", digits=4)
 ```
@@ -150,7 +143,6 @@ sigma_1 <- 0.25
 sigma_2 <- 2
 a <- 0
 
-set.seed(032420)
 y_1_star <- rtnorm(1000, mu = mu_1, sd = sigma_1, a = a)
 y_2_star <- rtnorm(1000, mu = mu_2, sd = sigma_2, a = a)
 df <- data.frame(y_star = c(y_1_star, y_2_star), 
@@ -187,26 +179,23 @@ We then can fit our model with separate variances for each group using the comma
 mod_result <- tcensReg_sepvar(y ~ group, a=a, v=nu, group_var="group", method="maxLik", data=df)
 mod_result
 sepvar_est <- mod_result$theta
-mu_1_est <- sepvar_est[1]
-mu_2_est <- sum(sepvar_est[1:2])
-sigma_1_est <- exp(sepvar_est[3])
-sigma_2_est <- exp(sepvar_est[4])
+sepvar_est[3:4] <- exp(sepvar_est[3:4])
 
 results_df <- data.frame(rbind(c(mu_1, mu_2, sigma_1, sigma_2),
-                               c(mu_1_est, mu_2_est, sigma_1_est, sigma_2_est)))
+                               t(sepvar_est)))
 names(results_df) <- c("mu_1", "mu_2", "sigma_1", "sigma_2")
 row.names(results_df) <- c("Truth", "tcensReg")
-results_df$mu1_pct_bias <- paste0(round(((results_df$mu_1 - mu_1)/mu_1)*100, 2), "%")
-results_df$mu2_pct_bias <- paste0(round(((results_df$mu_2 - mu_2)/mu_2)*100, 2), "%")
-results_df$sigma1_pct_bias <- paste0(round(((results_df$sigma_1 - sigma_1)/sigma_1)*100, 2), "%")
-results_df$sigma2_pct_bias <- paste0(round(((results_df$sigma_2 - sigma_2)/sigma_2)*100, 2), "%")
+results_df$mu1_bias <- abs(results_df$mu_1 - mu_1)
+results_df$mu2_bias <- abs(results_df$mu_2 - mu_2)
+results_df$sigma1_bias <- abs(results_df$sigma_1 - sigma_1)
+results_df$sigma2_bias <- abs(results_df$sigma_2 - sigma_2)
 
 knitr::kable(results_df, format="markdown", digits=4)
 ```
 
 # Performance Comparison: Censored-Only and Truncated-Only (Intercept Only Model)
 Note also that the `tcensReg` can also estimate parameters in the censored-only or truncated-only cases. We show below that by using analytic values in the tcensReg implementation that our method is faster then the alternative estimation procedures while providing better variance estimates. With a small set of covariates and `p<<n` we can use the Newton Raphson method of optimization, which is computationally fast with few covariates.
-```{r speed comparison, message=FALSE, warning=FALSE, cache=TRUE}
+```{r speed comparison, message=FALSE, warning=FALSE}
 library(microbenchmark)
 #testing the censored-only regression
 library(censReg)
