@@ -4,9 +4,17 @@
 \alias{tcensReg_sepvar}
 \title{Regression Method for Truncated Normal Distribution with Censoring for Indepentend Truncated Normal Groups}
 \usage{
-tcensReg_sepvar(formula, a = -Inf, v = NULL, group_var,
-  method = c("BFGS", "maxLik", "CG"), theta_init = NULL,
-  data = sys.frame(sys.parent()), max_iter = 100, ...)
+tcensReg_sepvar(
+  formula,
+  a = -Inf,
+  v = NULL,
+  group_var,
+  method = c("BFGS", "maxLik", "CG"),
+  theta_init = NULL,
+  data = sys.frame(sys.parent()),
+  max_iter = 100,
+  ...
+)
 }
 \arguments{
 \item{formula}{Object of class \code{formula} which symbolically describes the model to be fit}

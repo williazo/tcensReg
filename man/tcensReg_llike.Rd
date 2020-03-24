@@ -25,3 +25,4 @@ Scalar value of the log-likelihood at the nth iterate
 iteration of theta. If \code{a} and/or \code{v} are not specified then the corresponding censored only, truncated only,
 or gaussian log likelihood will be used. This function is called as part of the Newton-Raphson algorithm in \code{tcensReg_newton}.
 }
+\keyword{internal}

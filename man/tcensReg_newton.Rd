@@ -4,9 +4,17 @@
 \alias{tcensReg_newton}
 \title{Newton-Raphson Algorithm for Truncated Normal Distribution with Censoring with Linear Equation Mean}
 \usage{
-tcensReg_newton(y, X, a = -Inf, v = NULL, epsilon = 1e-04,
-  tol_val = 1e-06, max_iter = 100, step_max = 10,
-  theta_init = NULL)
+tcensReg_newton(
+  y,
+  X,
+  a = -Inf,
+  v = NULL,
+  epsilon = 1e-04,
+  tol_val = 1e-06,
+  max_iter = 100,
+  step_max = 10,
+  theta_init = NULL
+)
 }
 \arguments{
 \item{y}{Numeric vector with the observed truncated and censored outcomes}

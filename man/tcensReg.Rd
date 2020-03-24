@@ -4,8 +4,14 @@
 \alias{tcensReg}
 \title{Regression Method for Truncated Normal Distribution with Censored Data}
 \usage{
-tcensReg(formula, a = -Inf, v = NULL, data = sys.frame(sys.parent()),
-  method = c("CG", "Newton", "BFGS"), ...)
+tcensReg(
+  formula,
+  a = -Inf,
+  v = NULL,
+  data = sys.frame(sys.parent()),
+  method = c("CG", "Newton", "BFGS"),
+  ...
+)
 }
 \arguments{
 \item{formula}{Object of class \code{formula} which symbolically describes the model to be fit}
@@ -22,7 +28,7 @@ tcensReg(formula, a = -Inf, v = NULL, data = sys.frame(sys.parent()),
 }
 \value{
 Returns a list of final estimate of theta, total number of iterations performed, initial log-likelihood,
-final log-likelihood, and estimated variance covariance matrix.
+final log-likelihood, estimated variance covariance matrix, information criterion, and model design matrix.
 }
 \description{
 This function is used to find estimates from a linear equation assuming that the underlying distribution is truncated normal

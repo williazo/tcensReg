@@ -4,8 +4,7 @@
 \alias{tcensReg_llike_sepvar_maxLik}
 \title{Log Likelihood for Model for J independent Truncated Normal Variables with Same Mean Structure but Different Variance}
 \usage{
-tcensReg_llike_sepvar_maxLik(theta, y, X, group, left_trunc = -Inf,
-  v = NULL)
+tcensReg_llike_sepvar_maxLik(theta, y, X, group, left_trunc = -Inf, v = NULL)
 }
 \arguments{
 \item{theta}{Numeric vector containing the values at the present iterate for the (p-1) fixed mean parameters and the J log sigma values}

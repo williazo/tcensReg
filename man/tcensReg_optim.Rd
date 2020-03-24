@@ -4,9 +4,18 @@
 \alias{tcensReg_optim}
 \title{Optimization for Truncated Normal Distribution with Censoring with Linear Equation Mean using optim}
 \usage{
-tcensReg_optim(y, X, a = -Inf, v = NULL, method, epsilon = 1e-04,
-  tol_val = 1e-06, max_iter = 100, step_max = 10,
-  theta_init = NULL)
+tcensReg_optim(
+  y,
+  X,
+  a = -Inf,
+  v = NULL,
+  method,
+  epsilon = 1e-04,
+  tol_val = 1e-06,
+  max_iter = 100,
+  step_max = 10,
+  theta_init = NULL
+)
 }
 \arguments{
 \item{y}{Numeric vector with the observed truncated and censored outcomes}
