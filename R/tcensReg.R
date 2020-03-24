@@ -31,7 +31,7 @@
 #' tcensReg(y ~ 1, v = 0.25, a = 0)
 #'
 #' @return Returns a list of final estimate of theta, total number of iterations performed, initial log-likelihood,
-#' final log-likelihood, and estimated variance covariance matrix.
+#' final log-likelihood, estimated variance covariance matrix, information criterion, and model design matrix.
 #'
 #' @export
 
@@ -96,6 +96,9 @@ tcensReg <- function(formula, a = -Inf, v = NULL, data = sys.frame(sys.parent())
     bic <- log(length(y)) * length(results$theta) - 2 * results$final_ll
     info_criteria <- c(AIC=aic, BIC=bic)
     results[["info_criteria"]] <- info_criteria
+    results$model_matrix <- X
+
+    class(results) <- "tcensReg"
 
     return(results)
 }
