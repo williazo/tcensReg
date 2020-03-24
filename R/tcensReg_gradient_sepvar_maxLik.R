@@ -10,6 +10,7 @@
 #' @importFrom stats dnorm pnorm
 #'
 #' @return Vector of gradient values with p-1 beta parameters and log sigma for the nth iterate
+#' @keywords internal
 
 tcensReg_gradient_sepvar_maxLik <- function(theta, y, X, group, left_trunc = -Inf, v = NULL){
 
