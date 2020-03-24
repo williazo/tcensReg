@@ -11,7 +11,7 @@ lapply(.list.of.packages, function(x) if(!requireNamespace(x, quietly=TRUE)) ins
 vapply(.list.of.packages, require, character.only=TRUE, quietly=TRUE)
 
 #enabling parallel processing
-future::plan(multisession())
+future::plan(multisession)
 
 #function for censoring the data based on 12.0 CPD specifications
 cens_method <- function(x, method, tobit_val){
