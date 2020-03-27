@@ -28,7 +28,7 @@ arXiv:[1911.11221](https://arxiv.org/abs/1911.11221).
 # Installation
 
 You can install `tcensReg` from CRAN for the stable release or install
-the GitHub verion for the active development version:
+the GitHub version for the active development version:
 
 ``` r
 #stable CRAN version
@@ -105,13 +105,25 @@ using `y` with the `tcensReg` package as shown below.
 #loading the package
 library(tcensReg)  
 t_mod <- tcensReg(y ~ 1, data=dt, a=0, v=0.25)
-t_mod
+summary(t_mod)
 ```
 
     ## 
+    ## Call:
+    ## tcensReg(formula = y ~ 1, a = 0, v = 0.25, data = dt)
+    ## 
+    ## Assumed Distribution:
+    ## Truncated Normal with Censoring
+    ## 
+    ## Count of Observations:
+    ##    Total Observations Censored Observations 
+    ##                  1000                   199 
+    ## 
+    ## 
     ## Coefficients:
-    ## (Intercept)       sigma 
-    ##      0.4562      0.5405 
+    ##             Estimate Std. Error t value
+    ## (Intercept)   0.4562     0.0359 12.7024
+    ## sigma         0.5405     0.0142 38.0508
     ## 
     ## Log Likelihood: -710.7033
     ## Information Criterion: AIC=1425.4066 BIC=1435.2221
@@ -119,20 +131,23 @@ t_mod
     ## Psuedo R2: 0 method - mckelvey_zavoina
 
 By default the coefficients are returned along with log likelihood and
-other fit criterion statistics. Note that the Psuedo R2 in the case of
+other fit criterion statistics. Note that the Pseudo R2 in the case of
 an intercept only model is exactly equal to zero.
 
 ``` r
 names(t_mod)
 ```
 
-    ## [1] "theta"         "convergence"   "initial_ll"    "final_ll"     
-    ## [5] "var_cov"       "method"        "info_criteria" "model_matrix"
+    ##  [1] "theta"             "convergence"       "initial_ll"       
+    ##  [4] "final_ll"          "var_cov"           "method"           
+    ##  [7] "info_criteria"     "model_matrix"      "call"             
+    ## [10] "n_count"           "latent_assumption"
 
 Note that the this object contains parameter estimates theta,
-convergence criterion code, initial/final log-liklihood values,
+convergence criterion code, initial/final log-likelihood values,
 variance-covariance matrix, method of optimization, information
-criterion and the design matrix used from the model.
+criterion, design matrix used from the model, formula call, count of
+total/censored observations, and latent distributional assumption.
 
 Comparing the values to the truth we see that the estimates are
 unbiased.
@@ -279,7 +294,7 @@ censored-only or truncated-only cases. We show below that by using
 analytic values in the tcensReg implementation that our method is faster
 then the alternative estimation procedures while providing better
 variance estimates. With a small set of covariates and `p<<n` we can use
-the Newton Raphson method of optimization, which is computationally fast
+the Newton-Raphson method of optimization, which is computationally fast
 with few covariates.
 
 ``` r
