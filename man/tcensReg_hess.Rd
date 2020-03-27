@@ -7,15 +7,15 @@
 tcensReg_hess(theta, y, X, a = -Inf, v = NULL)
 }
 \arguments{
-\item{theta}{Numeric vector numeric vector containing estimates of beta and log sigma}
+\item{theta}{Numeric vector containing estimates of \eqn{\beta} and \eqn{\log(\sigma)}}
 
 \item{y}{Numeric vector with the observed truncated and censored outcomes}
 
 \item{X}{Numeric design matrix}
 
-\item{a}{Numeric scalar indicating the truncation value}
+\item{a}{Numeric scalar indicating the truncation value. Initial value is -Inf indicating no truncation}
 
-\item{v}{Numeric scalar indicating the censoring value}
+\item{v}{Numeric scalar indicating the censoring value. Initially set to NULL indicating no censoring}
 }
 \value{
 Matrix of Hessian values for the nth iterate
@@ -23,3 +23,4 @@ Matrix of Hessian values for the nth iterate
 \description{
 Hessian Matrix for Truncated Normal Distribution with Censoring with Linear Equation Mean
 }
+\keyword{internal}

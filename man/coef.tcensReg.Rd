@@ -4,14 +4,16 @@
 \alias{coef.tcensReg}
 \title{Method for Extracting Coefficient Estimates for tcensReg S3 Objects}
 \usage{
-\method{coef}{tcensReg}(obj, logsigma = FALSE, digits = 4)
+\method{coef}{tcensReg}(object, logsigma = FALSE, digits = 4, ...)
 }
 \arguments{
-\item{obj}{Object of class \code{tcensReg}}
+\item{object}{Object of class \code{tcensReg}}
 
 \item{logsigma}{Logical indicator of whether to return standard deviation as logsigma or sigma. Default is FALSE returning sigma}
 
 \item{digits}{Numeric scalar indicating the number of digits to return}
+
+\item{...}{Extra arguments}
 }
 \value{
 numeric named vector of coefficient estimates

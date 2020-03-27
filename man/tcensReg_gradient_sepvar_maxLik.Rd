@@ -2,7 +2,7 @@
 % Please edit documentation in R/tcensReg_gradient_sepvar_maxLik.R
 \name{tcensReg_gradient_sepvar_maxLik}
 \alias{tcensReg_gradient_sepvar_maxLik}
-\title{Gradient Vector for Truncated Normal Distribution with Censoring with Linear Equation Mean for J Independent Truncated Normals with Seprate Variance}
+\title{maxLik Gradient Vector for J Independent Truncated Normal Random Variables with Separate Variance}
 \usage{
 tcensReg_gradient_sepvar_maxLik(
   theta,
@@ -30,6 +30,6 @@ tcensReg_gradient_sepvar_maxLik(
 Vector of gradient values with p-1 beta parameters and log sigma for the nth iterate
 }
 \description{
-Gradient Vector for Truncated Normal Distribution with Censoring with Linear Equation Mean for J Independent Truncated Normals with Seprate Variance
+maxLik Gradient Vector for J Independent Truncated Normal Random Variables with Separate Variance
 }
 \keyword{internal}

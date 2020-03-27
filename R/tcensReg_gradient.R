@@ -1,16 +1,10 @@
 #' Gradient Vector for Truncated Normal Distribution with Censoring with Linear Equation Mean
 #'
-#' @param theta Numeric vector numeric vector containing estimates of beta and log sigma
-#' @param a Numeric scalar indicating the truncation value
-#' @param v Numeric scalar indicating the censoring value
-#' @param y Numeric vector with the observed truncated and censored outcomes
-#' @param X Numeric design matrix
+#' @inheritParams tcensReg_llike
 #'
 #' @importFrom stats dnorm pnorm
-#' @export
-#'
 #' @return Vector of gradient values with p-1 beta parameters and log sigma for the nth iterate
-
+#' @keywords internal
 tcensReg_gradient <- function(theta, y, X, a = -Inf, v = NULL){
 
   nabla <- vector(length = length(theta)) #creating an empty vector to store the gradient

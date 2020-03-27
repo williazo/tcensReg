@@ -2,7 +2,7 @@
 % Please edit documentation in R/tcensReg_gradient_sepvar.R
 \name{tcensReg_gradient_sepvar}
 \alias{tcensReg_gradient_sepvar}
-\title{Gradient Vector for Truncated Normal Distribution with Censoring with Linear Equation Mean for J Independent Truncated Normals with Seprate Variance}
+\title{Analytic Gradient Vector for J Independent Truncated Normal Random Variables with Separate Variance}
 \usage{
 tcensReg_gradient_sepvar(theta, y, X, group, a = -Inf, v = NULL)
 }
@@ -23,5 +23,6 @@ tcensReg_gradient_sepvar(theta, y, X, group, a = -Inf, v = NULL)
 Vector of gradient values with p-1 beta parameters and log sigma for the nth iterate
 }
 \description{
-Gradient Vector for Truncated Normal Distribution with Censoring with Linear Equation Mean for J Independent Truncated Normals with Seprate Variance
+Analytic Gradient Vector for J Independent Truncated Normal Random Variables with Separate Variance
 }
+\keyword{internal}

@@ -7,22 +7,27 @@
 tcensReg_llike(theta, y, X, a = -Inf, v = NULL)
 }
 \arguments{
-\item{theta}{Numeric vector containing estimates of beta and log sigma}
+\item{theta}{Numeric vector containing estimates of \eqn{\beta} and \eqn{\log(\sigma)}}
 
 \item{y}{Numeric vector with the observed truncated and censored outcomes}
 
 \item{X}{Numeric design matrix}
 
-\item{a}{Numeric scalar indicating the truncation value}
+\item{a}{Numeric scalar indicating the truncation value. Initial value is -Inf indicating no truncation}
 
-\item{v}{Numeric scalar indicating the censoring value}
+\item{v}{Numeric scalar indicating the censoring value. Initially set to NULL indicating no censoring}
 }
 \value{
 Scalar value of the log-likelihood at the nth iterate
 }
 \description{
-\code{tcensReg_llike} is a supporting function that is used to calculate the log likelihood value at the nth
-iteration of theta. If \code{a} and/or \code{v} are not specified then the corresponding censored only, truncated only,
-or gaussian log likelihood will be used. This function is called as part of the Newton-Raphson algorithm in \code{tcensReg_newton}.
+This is a supporting function that is used to calculate the log likelihood value at the nth
+iteration of theta.
+}
+\details{
+If \code{a} and/or \code{v} are not specified then the corresponding censored only, truncated only,
+or gaussian log likelihood will be used. This function is called as part of
+the Newton-Raphson algorithm in \code{tcensReg_newton} and in additional
+optimization methods in \code{tcensReg_optim}.
 }
 \keyword{internal}

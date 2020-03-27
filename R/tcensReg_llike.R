@@ -1,19 +1,23 @@
 #' Log Likelihood for Truncated Normal Distribution with Censoring with Linear Equation Mean
 #'
-#' \code{tcensReg_llike} is a supporting function that is used to calculate the log likelihood value at the nth
-#' iteration of theta. If \code{a} and/or \code{v} are not specified then the corresponding censored only, truncated only,
-#' or gaussian log likelihood will be used. This function is called as part of the Newton-Raphson algorithm in \code{tcensReg_newton}.
+#' This is a supporting function that is used to calculate the log likelihood value at the nth
+#' iteration of theta.
 #'
-#' @param theta Numeric vector containing estimates of beta and log sigma
-#' @param a Numeric scalar indicating the truncation value
-#' @param v Numeric scalar indicating the censoring value
+#' @param theta Numeric vector containing estimates of \eqn{\beta} and \eqn{\log(\sigma)}
 #' @param y Numeric vector with the observed truncated and censored outcomes
 #' @param X Numeric design matrix
+#' @inheritParams tcensReg
+#'
+#' @details
+#' If \code{a} and/or \code{v} are not specified then the corresponding censored only, truncated only,
+#' or gaussian log likelihood will be used. This function is called as part of
+#' the Newton-Raphson algorithm in \code{tcensReg_newton} and in additional
+#' optimization methods in \code{tcensReg_optim}.
 #'
 #' @importFrom stats dnorm pnorm
-#' @export
-#' @keywords internal
+#'
 #' @return Scalar value of the log-likelihood at the nth iterate
+#' @keywords internal
 
 tcensReg_llike <- function(theta, y, X, a = -Inf, v = NULL){
 

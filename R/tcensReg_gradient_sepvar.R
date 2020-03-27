@@ -1,4 +1,4 @@
-#' Gradient Vector for Truncated Normal Distribution with Censoring with Linear Equation Mean for J Independent Truncated Normals with Seprate Variance
+#' Analytic Gradient Vector for J Independent Truncated Normal Random Variables with Separate Variance
 #'
 #' @param theta Numeric vector numeric vector containing estimates of beta and log sigma
 #' @param a Numeric scalar indicating the truncation value
@@ -8,9 +8,9 @@
 #' @param group Character vector identifying the group membership for the independent truncated normal variables. This defines the \code{J} groups.
 #'
 #' @importFrom stats dnorm pnorm
-#' @export
 #'
 #' @return Vector of gradient values with p-1 beta parameters and log sigma for the nth iterate
+#' @keywords internal
 
 tcensReg_gradient_sepvar <- function(theta, y, X, group, a = -Inf, v = NULL){
 

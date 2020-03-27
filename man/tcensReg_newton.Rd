@@ -33,12 +33,14 @@ tcensReg_newton(
 
 \item{step_max}{Maximum number of steps when performing line search. Default is 10}
 
-\item{theta_init}{Initial values of theta provided by the user. If unspecified then calculcates values from OLS regression}
+\item{theta_init}{Initial values of theta provided by the user. If unspecified then calculates values from OLS regression}
 }
 \value{
 Returns a list of final estimate of theta, total number of iterations performed, initial log-likelihood,
 final log-likelihood, and estimated variance covariance matrix.
 }
 \description{
-Newton-Raphson Algorithm for Truncated Normal Distribution with Censoring with Linear Equation Mean
+Iteratively solve the optimization log likelihood problem using
+Newton-Raphson algorithm with analytic gradient and Hessian values and step halving.
 }
+\keyword{internal}

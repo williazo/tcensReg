@@ -11,9 +11,9 @@
 #' @param group Factor variable used to define the J groups
 #'
 #' @importFrom stats dnorm pnorm
-#' @export
 #'
 #' @return Scalar value of the log-likelihood at the nth-iterate
+#' @keywords internal
 tcensReg_llike_sepvar <- function(theta, y, X, group, a = -Inf, v = NULL){
   p <- length(theta)
   num_groups <- length(unique(group))

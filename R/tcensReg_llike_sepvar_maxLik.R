@@ -13,6 +13,7 @@
 #' @importFrom stats dnorm pnorm
 #'
 #' @return Scalar value of the log-likelihood at the nth-iterate
+#' @keywords internal
 tcensReg_llike_sepvar_maxLik <- function(theta, y, X, group, left_trunc = -Inf, v = NULL){
     p <- length(theta)
     num_groups <- length(unique(group))

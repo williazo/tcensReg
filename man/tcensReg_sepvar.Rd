@@ -2,7 +2,7 @@
 % Please edit documentation in R/tcensReg_sepvar.R
 \name{tcensReg_sepvar}
 \alias{tcensReg_sepvar}
-\title{Regression Method for Truncated Normal Distribution with Censoring for Indepentend Truncated Normal Groups}
+\title{Regression Method for Truncated Normal Distribution with Censoring for Independent Truncated Normal Groups}
 \usage{
 tcensReg_sepvar(
   formula,
@@ -23,17 +23,20 @@ tcensReg_sepvar(
 
 \item{v}{Numeric scalar indicating the censoring value. Initially set to NULL indicating no censoring}
 
-\item{group_var}{Character scalar indiciating a variable in the data.frame that defines the independent groups}
+\item{group_var}{Character scalar indicating a variable in the data.frame that defines the independent groups}
 
-\item{method}{Character value indicating which optimization routine to perform. Choices include \code{BFGS}, \code{maxLik} and \code{CG}. See details for explanation on each method.}
+\item{method}{Character value indicating which optimization routine to perform.
+Choices include \code{BFGS}, \code{maxLik} and \code{CG}.
+See details for explanation on each method.}
 
 \item{theta_init}{Optional initial values for the parameters. Default is to fit a linear regression model.}
 
-\item{data}{Data.frame that contains the outcome and corresponding covariates. If none is provided then assumes objects are in user's environment.}
+\item{data}{Data.frame that contains the outcome and corresponding covariates.
+If none is provided then assumes objects are in user's environment.}
 
 \item{max_iter}{Numeric value indicating the maximum number of iterations to perform.}
 
-\item{...}{Additional arguments from \code{\link{tcensReg_newton}} such as \code{max_iter}, \code{step_max}, or \code{epsilon}.}
+\item{...}{Additional arguments such as \code{max_iter}, \code{step_max}, or \code{epsilon}.}
 }
 \value{
 Returns a list of final estimate of theta, total number of iterations performed, initial log-likelihood,
@@ -42,12 +45,16 @@ final log-likelihood, and estimated variance covariance matrix.
 \description{
 This function is used to find estimates from a linear equation assuming that the data is observed from a truncated
  distribution with left censoring. It uses numerical values of the gradient vector and hessian matrix to
- solve for the maximum likelihood using \code{maxLik} package. This function can also
+ solve for the maximum likelihood using \code{\link[maxLik]{maxLik}} package. This function can also
  be used with censored only, truncated only, or uncensored and untruncated gaussian models.
 }
 \details{
-Currently available optimization routines include conjugate gradient (\code{CG}), Newton-Raphson type via maxLike package (\code{\link[maxLik]{maxLik}}), and BFGS (\code{BFGS}).
- The default method is set as the conjugate gradient. Both the of the conjugate gradient and BFGS methods are implemented via the
- general-purpose optimization \code{\link{optim}}. These two methods use only the respective likelihood and gradient functions.
- The Newton-Raphson method uses the likelihood, gradient, and Hessian functions along with line search to achieve the maximum likelihood.
+Currently available optimization routines include conjugate gradient (\code{CG}),
+ Newton-Raphson type via maxLik package (\code{\link[maxLik]{maxLik}}), and BFGS (\code{BFGS}).
+ The default method is set as the conjugate gradient.
+ Both the of the conjugate gradient and BFGS methods are implemented via the
+ general-purpose optimization \code{\link{optim}}. These two methods use only
+ the respective likelihood and gradient functions.
+ The Newton-Raphson method uses the likelihood, gradient, and Hessian
+ functions along with line search to achieve the maximum likelihood.
 }

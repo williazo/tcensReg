@@ -1,22 +1,17 @@
 #' Optimization for Truncated Normal Distribution with Censoring with Linear Equation Mean using optim
 #'
-#' @param y Numeric vector with the observed truncated and censored outcomes
-#' @param X Numeric design matrix
-#' @param a Numeric scalar indicating the truncation value. Initial value is -Inf indicating no truncation
-#' @param v Numeric scalar indicating the censoring value. Initially set to NULL indicating no censoring
-#' @param method Character value indicating which optimization method to perform.
-#' @param epsilon Numeric value used to define when the algorithm should stop when the gradient is less then epsilon. Default is 0.001
-#' @param theta_init Initial values of theta provided by the user. If unspecified then calculcates values from OLS regression
-#' @param max_iter Maximum number of iterations for algorithm. Default is 100
-#' @param step_max Maximum number of steps when performing line search. Default is 10
-#' @param tol_val Tolerance value used to stop the algorithm if the (n+1) and (n) log likelihood is within the tolerance limit
+#' @description Iteratively solves likelihood of truncated normal with censoring
+#' using only gradient and/or likelihood values
+#'
+#' @inheritParams tcensReg_llike
+#' @inheritParams tcensReg
+#' @inheritParams tcensReg_newton
 #'
 #' @importFrom stats coef dnorm lm model.frame model.matrix pnorm optim
 #'
-#' @export
-#'
 #' @return Returns a list of final estimate of theta, total number of iterations performed, initial log-likelihood,
 #' final log-likelihood, and estimated variance covariance matrix.
+#' @keywords internal
 
 
 tcensReg_optim<-function(y, X, a = -Inf, v = NULL, method, epsilon = 1e-4,
