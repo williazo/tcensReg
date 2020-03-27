@@ -4,10 +4,10 @@
 \alias{predict.tcensReg}
 \title{Method for Obtaining Fitted Predictions for tcensReg S3 Objects}
 \usage{
-\method{predict}{tcensReg}(obj, newdata = NULL)
+\method{predict}{tcensReg}(object, newdata = NULL, ...)
 }
 \arguments{
-\item{obj}{Object of class \code{tcensReg}}
+\item{object}{Object of class \code{tcensReg}}
 
 \item{newdata}{New values to obtain predictions}
 }
