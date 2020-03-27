@@ -7,7 +7,7 @@
 #################################
 #installing and loading the needed packages
 rm(list=ls())
-.list.of.packages <- c("devtools", "tictoc", "future.apply", "tcensReg", "pbapply")
+.list.of.packages <- c("devtools", "tictoc", "future.apply", "tcensReg", "pbapply", "tidyverse")
 lapply(.list.of.packages, function(x) if(!requireNamespace(x, quietly=TRUE)) install.packages(x))
 lapply(.list.of.packages, require, character.only=TRUE, quietly=TRUE)
 
@@ -422,14 +422,14 @@ cens_diff_sim_noninf <- function(rand_seed, mu1, non_inf_margin, sd, n1, n2, B, 
 }
 
 #testing to make sure this works
-cens_diff_sim_noninf(rand_seed = 032020, mu1 = 0.9,
+cens_diff_sim_noninf(rand_seed = 032020, mu1 = 1.0,
                      non_inf_margin = -0.15, sd = 0.45,
                      n1 = 10, n2 = 10, B = 100, tobit_val = 0.61, a = 0,
                      alpha = 0.05, silent=TRUE)
 
 tictoc::tic()
 tnorm_results_noninf_list <- pbapply::pblapply(samp_sizes, function(x){
-    result <- cens_diff_sim_noninf(rand_seed = 032020, mu1 = 0.9,
+    result <- cens_diff_sim_noninf(rand_seed = 032020, mu1 = 1.0,
                          non_inf_margin = -0.15, sd = 0.45,
                          n1 = x, n2 = x, B = 10000, tobit_val = 0.61, a = 0,
                          alpha = 0.05, silent=TRUE)
@@ -438,3 +438,7 @@ tictoc::toc()
 
 names(tnorm_results_noninf_list) <- paste0("n_", samp_sizes)
 tnorm_results_noninf <- do.call(rbind, tnorm_results_noninf_list)
+tnorm_results_noninf$method <- c("Uncens NT", "GS", "DL", "DL_half", "Tobit", "tcensReg")
+tnorm_results_noninf$method <- factor(tnorm_results_noninf$method, levels = c("GS", "Uncens NT", "DL", "DL_half", "Tobit", "tcensReg"))
+tnorm_results_noninf %>%
+    arrange(n1, method)
