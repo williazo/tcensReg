@@ -33,7 +33,7 @@ test_that("functional tcensReg output check", {
     output <- tcensReg(y ~ 1, v=0.25, a=0)
 
     #correct number of objects
-    expect_equal(length(output), 8)
+    expect_equal(length(output), 11)
     #correct dimensions of variance covariance
     expect_equal(dim(output$var_cov), c(2, 2))
     #final log-likelihood above initial
