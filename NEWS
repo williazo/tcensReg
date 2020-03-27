@@ -1,3 +1,13 @@
+version 0.1.6 (2020-03-27)
+	+ create S3 class "tcensReg" for output from tcensReg() function
+		+ available S3 methods include: print, coef, predict, summary, and vcov
+	+ added pseudo_r2() function to calculate goodness of fit measures for censored observations
+	+ updates to documentation for functions for added clarity
+		+ also added references and equations
+	+ removed internal functions from exported documentation such
+		+ internal functions include those used to evaluate likelihood, gradient, hessian, or direct optimization procedure
+	+ added simulation code for simulation study 4 for behavior as sample size increases
+
 version 0.1.5 (2020-01-03)
 	+ updates to rtnorm() function to correct errors with vector values mean and scalar
 	+ adding in inst/script function into CRAN version after updating future_lapply() and package installation
