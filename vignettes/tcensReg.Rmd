@@ -15,7 +15,7 @@ knitr::opts_chunk$set(echo = TRUE)
 The goal of this package is to estimate parameters from a linear model when the data comes from a truncated normal distribution with censoring. Maximum likelihood values are returned. There are multiple method available for optimization with the default set as conjugate gradient. This package is also able to return maximum likelihood estimates for truncated only or censored only data similar to `truncreg` and `censReg` packages.
 
 # Installation
-You can install `tcensReg` from CRAN for the stable release or install the GitHub verion for the active development version:
+You can install `tcensReg` from CRAN for the stable release or install the GitHub version for the active development version:
 
 ```{r how_to_install, eval=FALSE}
 #stable CRAN version
@@ -91,29 +91,32 @@ ggplot(data=dt, aes(x=y, y=..density..))+
 ```
 
 We can then estimate the mean, `mu`, and standard deviation, `sigma`, using `y` with the `tcensReg` package as shown below.
-```{r message=FALSE}
-tcensReg(y ~ 1, data=dt, a=0, v=0.25)
+```{r t_mod_est, message=FALSE}
+#loading the package
+library(tcensReg)  
+t_mod <- tcensReg(y ~ 1, data=dt, a=0, v=0.25)
+summary(t_mod)
 ```
+By default the coefficients are returned along with log likelihood and other fit criterion statistics. Note that the Pseudo R2 in the case of an intercept only model is exactly equal to zero.
 
-Note that the this will return parameter estimates, variance-covariance matrix, the number of iterations until convergence, and the initial/final log-likelihood values.
+```{r t_mod_full_print}
+names(t_mod)
+```
+Note that the this object contains parameter estimates theta, convergence criterion code, initial/final log-likelihood values, variance-covariance matrix, method of optimization, information criterion, design matrix used from the model, formula call, count of total/censored observations, and latent distributional assumption.
 
 Comparing the values to the truth we see that the estimates are unbiased.
-```{r message=FALSE}
+```{r t_mod_compare, message=FALSE}
 #tcensReg model
 output <- tcensReg(y ~ 1, data=dt, a=a, v=nu)
 #extracting the point estimates
-tcensReg_est <- output$theta 
-#exponentiating the estimate of log_sigma to obtain sigma
-tcensReg_est[2] <- exp(tcensReg_est[2]) 
+tcensReg_est <- coef(output) #this returns sigma rather than log sigma
 
 #OLS model
 lm_output <- lm(y ~ 1, data=dt) 
 lm_est <- c(coef(lm_output), summary(lm_output)$sigma)
 #censored only model, i.e., Tobit model
 cens_output <- tcensReg(y ~ 1, data=dt, v=nu) 
-cens_est <- cens_output$theta
-cens_est[2] <- exp(cens_est[2])
-
+cens_est <- coef(cens_output)
 
 results_df <- data.frame(rbind(c(mu, sigma),
                                t(tcensReg_est),
@@ -121,8 +124,8 @@ results_df <- data.frame(rbind(c(mu, sigma),
                                t(cens_est)))
 names(results_df) <- c("mu", "sigma")
 row.names(results_df) <- c("Truth", "tcensReg", "Normal MLE", "Tobit")
-results_df$mu_bias <- abs(results_df$mu - mu)
-results_df$sigma_bias <- abs(results_df$sigma - sigma)
+results_df$mu_bias <- results_df$mu - mu
+results_df$sigma_bias <- results_df$sigma - sigma
 
 knitr::kable(results_df, format="markdown", digits=4)
 ```
@@ -143,6 +146,7 @@ sigma_1 <- 0.25
 sigma_2 <- 2
 a <- 0
 
+set.seed(032420)
 y_1_star <- rtnorm(1000, mu = mu_1, sd = sigma_1, a = a)
 y_2_star <- rtnorm(1000, mu = mu_2, sd = sigma_2, a = a)
 df <- data.frame(y_star = c(y_1_star, y_2_star), 
@@ -179,16 +183,19 @@ We then can fit our model with separate variances for each group using the comma
 mod_result <- tcensReg_sepvar(y ~ group, a=a, v=nu, group_var="group", method="maxLik", data=df)
 mod_result
 sepvar_est <- mod_result$theta
-sepvar_est[3:4] <- exp(sepvar_est[3:4])
+mu_1_est <- sepvar_est[1]
+mu_2_est <- sum(sepvar_est[1:2])
+sigma_1_est <- exp(sepvar_est[3])
+sigma_2_est <- exp(sepvar_est[4])
 
 results_df <- data.frame(rbind(c(mu_1, mu_2, sigma_1, sigma_2),
-                               t(sepvar_est)))
+                               c(mu_1_est, mu_2_est, sigma_1_est, sigma_2_est)))
 names(results_df) <- c("mu_1", "mu_2", "sigma_1", "sigma_2")
 row.names(results_df) <- c("Truth", "tcensReg")
-results_df$mu1_bias <- abs(results_df$mu_1 - mu_1)
-results_df$mu2_bias <- abs(results_df$mu_2 - mu_2)
-results_df$sigma1_bias <- abs(results_df$sigma_1 - sigma_1)
-results_df$sigma2_bias <- abs(results_df$sigma_2 - sigma_2)
+results_df$mu1_pct_bias <- paste0(round(((results_df$mu_1 - mu_1)/mu_1)*100, 2), "%")
+results_df$mu2_pct_bias <- paste0(round(((results_df$mu_2 - mu_2)/mu_2)*100, 2), "%")
+results_df$sigma1_pct_bias <- paste0(round(((results_df$sigma_1 - sigma_1)/sigma_1)*100, 2), "%")
+results_df$sigma2_pct_bias <- paste0(round(((results_df$sigma_2 - sigma_2)/sigma_2)*100, 2), "%")
 
 knitr::kable(results_df, format="markdown", digits=4)
 ```
