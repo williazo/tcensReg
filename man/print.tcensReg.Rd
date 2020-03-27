@@ -2,13 +2,12 @@
 % Please edit documentation in R/print.tcensReg.R
 \name{print.tcensReg}
 \alias{print.tcensReg}
-\title{Method for Printing tcensReg S3 Objects
-'}
+\title{Method for Printing tcensReg S3 Objects}
 \usage{
-\method{print}{tcensReg}(obj, logsigma = FALSE, digits = 4, ...)
+\method{print}{tcensReg}(x, logsigma = FALSE, digits = 4, ...)
 }
 \arguments{
-\item{obj}{Object of class \code{tcensReg}}
+\item{x}{Object of class \code{tcensReg}}
 
 \item{logsigma}{Logical indicator of whether to return standard deviation as logsigma or sigma. Default is FALSE returning sigma}
 
@@ -21,6 +20,5 @@ default method for printing an S3 object of class tcensReg
 }
 \description{
 Method for Printing tcensReg S3 Objects
-'
 }
 \keyword{internal}
