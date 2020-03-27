@@ -1,6 +1,6 @@
 Package: tcensReg
 Title: MLE of a Truncated Normal Distribution with Censored Data
-Version: 0.1.5
+Version: 0.1.6
 Authors@R:
     person(given = "Justin",
            family = "Williams",
@@ -14,7 +14,8 @@ LazyData: false
 RoxygenNote: 7.0.2
 Imports:
     stats,
-    maxLik
+    maxLik,
+    Rdpack
 Suggests: 
     knitr,
     rmarkdown,
@@ -26,6 +27,7 @@ Suggests:
     censReg,
     truncreg,
     microbenchmark
+RdMacros: Rdpack
 VignetteBuilder: knitr
 BugReports: https://github.com/williazo/tcensReg/issues
 URL: https://github.com/williazo/tcensReg
