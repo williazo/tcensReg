@@ -1,3 +1,6 @@
+version 0.1.7 (2020-06-29)
+	+ update citation for publication of article in BMC Medical Research Methodology
+
 version 0.1.6 (2020-03-27)
 	+ create S3 class "tcensReg" for output from tcensReg() function
 		+ available S3 methods include: print, coef, predict, summary, and vcov

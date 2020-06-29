@@ -1,12 +1,13 @@
-citHeader("To cite tcensReg in publications, please use:")
-
-citEntry(entry = "article",
+bibentry(bibtype = "Article",
   author = personList(as.person("Justin R. Williams"),
                              as.person("Hyung-Woo Kim"),
                              as.person("Catherine M. Crespi")),
-  title = "Modeling Variables with a Detection Limit using a Truncated Normal
- Distribution with Censoring",
-  year = "2019",
-  journal = "arXiv preprint arXiv:1911.11221",
-  textVersion = "Williams, J.R., Kim, H.W. and Crespi, C.M., 2019. Modeling Variables with a Detection Limit using a Truncated Normal Distribution with Censoring. arXiv preprint arXiv:1911.11221."
+  title = "Modeling observations with a detection limit using a truncated normal distribution with censoring",
+  year = "2020",
+  journal = "BMC Medical Research Methodology",
+  volume = "20",
+  pages = "170",
+  doi = "10.1186/s12874-020-01032-9",
+  header = "To cite tcensReg in publications, please use:",
+  textVersion = "Williams, J.R., Kim, H. & Crespi, C.M. Modeling observations with a detection limit using a truncated normal distribution with censoring. BMC Med Res Methodol 20, 170 (2020). https://doi.org/10.1186/s12874-020-01032-9"
 )
