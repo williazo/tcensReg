@@ -22,7 +22,7 @@ packages.
 
 For details on the methods, simulation performance, and an application
 to visual quality testing from clinical trials for intraocular lenses
-see the pre-print manuscript available at
+see the corresponding manuscript with open source access available at
 [doi:10.1186/s12874-020-01032-9](https://doi.org/10.1186/s12874-020-01032-9).
 
 # Installation
