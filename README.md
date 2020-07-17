@@ -10,6 +10,9 @@ version](http://www.r-pkg.org/badges/version/tcensReg)](http://www.r-pkg.org/pkg
 downloads](http://cranlogs.r-pkg.org/badges/grand-total/tcensReg)](http://www.r-pkg.org/pkg/tcensReg)
 [![cran
 checks](https://cranchecks.info/badges/worst/tcensReg)](https://cranchecks.info/pkgs/tcensReg)
+[![Build
+Status](https://travis-ci.org/williazo/tcensReg.svg?branch=master)](https://travis-ci.org/williazo/tcensReg)
+[![codecov](https://codecov.io/github/codecov/tcensReg/branch/master/graphs/badge.svg)](https://codecov.io/github/codecov/tcensReg)
 <!-- badges: end -->
 
 The goal of this package is to estimate parameters from a linear model
@@ -138,9 +141,7 @@ an intercept only model is exactly equal to zero.
 names(t_mod)
 ```
 
-    ##  [1] "theta"             "convergence"       "initial_ll"       
-    ##  [4] "final_ll"          "var_cov"           "method"           
-    ##  [7] "info_criteria"     "model_matrix"      "call"             
+    ##  [1] "theta"             "convergence"       "initial_ll"        "final_ll"          "var_cov"           "method"            "info_criteria"     "model_matrix"      "call"             
     ## [10] "n_count"           "latent_assumption"
 
 Note that the this object contains parameter estimates theta,
