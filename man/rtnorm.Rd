@@ -2,39 +2,47 @@
 % Please edit documentation in R/rtnorm.R
 \name{rtnorm}
 \alias{rtnorm}
-\title{Simulate Random Left-Truncated Normal Distribution}
+\title{Simulate Random Left-Truncated And/Or Right-Truncated Normal
+Distribution}
 \usage{
-rtnorm(n, mu, sd, a)
+rtnorm(n, mu = 0, sd = 1, a = -Inf, b = Inf)
 }
 \arguments{
-\item{n}{Numeric scalar representing the number of observations. Must be greater than or equal to 1.}
+\item{n}{Numeric scalar representing the number of observations. Must be
+greater than or equal to 1.}
 
-\item{mu}{Mean value of the underlying normal random variable}
+\item{mu}{Mean value of the underlying normal random variable. Default is 0}
 
-\item{sd}{Standard deviation of underlying normal random variable}
+\item{sd}{Standard deviation of underlying normal random variable. Default is
+1}
 
-\item{a}{Numeric vector indicating the left-truncation value.}
+\item{a}{Numeric vector indicating the left-truncation value. Default is -Inf}
+
+\item{b}{Numeric vector indicating the right-truncation value. Default is Inf}
 }
 \value{
 Returns a vector of samples drawn from the left truncated normal
 distribution equal to length n.
 }
 \description{
-This function is used to generate random samples from left-truncated normal distribution with specified mean and variance.
+This function is used to generate random samples from
+left-truncated and or right-truncated normal distribution with specified mean
+and variance.
 }
 \details{
 Our goal is to draw samples from the left truncated normal random variable
 \eqn{Y_{i}^{*}}. We define this distribution as
-\deqn{Y_{i}^{*}\sim TN(\mu, \sigma^{2}, a)}
+\deqn{Y_{i}^{*}\sim TN(\mu, \sigma^{2}, a, b)}
 
 Sampling is performed by first drawing from a random variable \eqn{Z} with a
 uniform distribution on the interval \eqn{[0, 1]} to
-generate cumulative density probabilities, \eqn{p}. Then the inverse density function
+generate cumulative density probabilities, \eqn{p}. Then the inverse density
+function
 of the truncated normal random variable is applied to generate our desired
 truncated normal observations.
 
 This inverse truncated normal function is shown below:
-\deqn{Y_{i}^{*}=\Phi^{-1}\Bigg\{p\times\bigg[1-\Phi\big(\frac{a-\mu}{\sigma}\big)\bigg]
+\deqn{Y_{i}^{*}=\Phi^{-1}\Bigg\{p\times\bigg[\Phi\big(\frac{b-\mu}{\sigma}\big)-\Phi\big(\frac{a-\mu}{\sigma}\big)\bigg]
 + \Phi\big(\frac{a-\mu}{\sigma}\big)\Bigg\}\times\sigma+\mu,}
 where \eqn{p} represents the probabilities sampled from the uniform
 distribution.
@@ -52,7 +60,7 @@ distribution.
 }
 }
 \examples{
-#zero truncated normal data with mean 0.5 and standard deviation 1
-y_star <- rtnorm(n = 100, mu = 0.5, sd = 1, a = 0)
+#zero left-truncated normal data with mean 0.5 and standard deviation 1
+y_star <- rtnorm(n = 100, mu = 0.5, sd = 1, a = 0, b = Inf)
 
 }
