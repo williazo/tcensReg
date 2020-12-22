@@ -4,8 +4,10 @@
 #' For this parametrization we assume that there exists (p-1) linear parameters for the mean and J separate variance parameters.
 #'
 #' @param theta Numeric vector containing the values at the present iterate for the (p-1) fixed mean parameters and the J log sigma values
-#' @param left_trunc Numeric scalar defining the common truncation value for each Truncated Normal
-#' @param v Numeric scalar defining the common censoring value
+#' @param left_trunc Numeric scalar defining the common left-truncation value for each Truncated Normal
+#' @param v Numeric scalar defining the common left-censoring value
+#' @param xi Numeric scalar defining the common right-censoring value
+#' @param right_trunc Numeric scalar defining the common right-truncation value for each Truncated Normal
 #' @param y Numeric vector containing the outcome
 #' @param X Numeric design matrix
 #' @param group Factor variable used to define the J groups
@@ -14,7 +16,14 @@
 #'
 #' @return Scalar value of the log-likelihood at the nth-iterate
 #' @keywords internal
-tcensReg_llike_sepvar_maxLik <- function(theta, y, X, group, left_trunc = -Inf, v = NULL){
+tcensReg_llike_sepvar_maxLik <- function(theta,
+                                         y,
+                                         X,
+                                         group,
+                                         left_trunc = -Inf,
+                                         v = NULL,
+                                         xi = NULL,
+                                         b = Inf) {
     p <- length(theta)
     num_groups <- length(unique(group))
     log_sigmas <- theta[(p-num_groups+1):p]

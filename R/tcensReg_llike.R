@@ -19,7 +19,13 @@
 #' @return Scalar value of the log-likelihood at the nth iterate
 #' @keywords internal
 
-tcensReg_llike <- function(theta, y, X, a = -Inf, v = NULL){
+tcensReg_llike <- function(theta,
+                           y,
+                           X,
+                           a = -Inf,
+                           v = NULL,
+                           xi = NULL,
+                           b = Inf) {
 
   #assume that there are a total of p parameters, then the first p-1 are assumed to be beta
   #and the last parameter is log_sigma

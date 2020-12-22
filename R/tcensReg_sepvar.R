@@ -6,11 +6,13 @@
 #'  be used with censored only, truncated only, or uncensored and untruncated gaussian models.
 #'
 #' @param formula Object of class \code{formula} which symbolically describes the model to be fit
-#' @param a Numeric scalar indicating the truncation value. Initial value is -Inf indicating no truncation
-#' @param v Numeric scalar indicating the censoring value. Initially set to NULL indicating no censoring
+#' @param a Numeric scalar indicating the left-truncation value. Initial value is -Inf indicating no truncation
+#' @param v Numeric scalar indicating the left-censoring value. Initially set to NULL indicating no censoring
+#' @param xi Numeric scalar indicating the right-censoring value. Initially set to NULL indicating no censoring
+#' @param b Numeric scalar indicating the right-truncation value. Initial value is Inf indicating no truncation
 #' @param group_var Character scalar indicating a variable in the data.frame that defines the independent groups
 #' @param method Character value indicating which optimization routine to perform.
-#' Choices include \code{BFGS}, \code{maxLik} and \code{CG}.
+#' Choices include \code{BFGS}, \code{maxLik} and \code{CG}. Default is \code{CG}.
 #' See details for explanation on each method.
 #' @param theta_init Optional initial values for the parameters. Default is to fit a linear regression model.
 #' @param data Data.frame that contains the outcome and corresponding covariates.
@@ -36,12 +38,18 @@
 #'
 #' @export
 
-tcensReg_sepvar <- function(formula, a = -Inf, v = NULL, group_var,
-                            method=c("BFGS", "maxLik", "CG"),
-                            theta_init = NULL, data = sys.frame(sys.parent()),
+tcensReg_sepvar <- function(formula,
+                            a = -Inf,
+                            v = NULL,
+                            xi = NULL,
+                            b = Inf,
+                            group_var,
+                            method = "CG",
+                            theta_init = NULL,
+                            data = sys.frame(sys.parent()),
                             max_iter = 100,
                             ...){
-  method <- match.arg(method)
+  method <- match.arg(method, choice = c("BFGS", "maxLik", "CG"))
   #checks for proper specification of formula
   if(class(formula)!= "formula"){
     stop("`formula` must be a formula", call. = FALSE)

@@ -8,25 +8,40 @@ tcensReg(
   formula,
   a = -Inf,
   v = NULL,
+  xi = NULL,
+  b = Inf,
   data = sys.frame(sys.parent()),
-  method = c("CG", "Newton", "BFGS"),
+  method = "CG",
   ...
 )
 }
 \arguments{
-\item{formula}{Object of class \code{formula} which symbolically describes the model to be fit}
+\item{formula}{Object of class \code{formula} which symbolically describes
+the model to be fit}
 
-\item{a}{Numeric scalar indicating the truncation value. Initial value is -Inf indicating no truncation}
+\item{a}{Numeric scalar indicating the left truncation value. Default is -Inf
+indicating no truncation}
 
-\item{v}{Numeric scalar indicating the censoring value. Initially set to NULL indicating no censoring}
+\item{v}{Numeric scalar indicating the left censoring value. Default is NULL
+indicating no censoring}
 
-\item{data}{Data.frame that contains the outcome and corresponding covariates. If none is provided then assumes objects are in user's environment.}
+\item{xi}{Numeric scalar indicating the right censoring valye. Default is
+NULL indicating to right censoring}
 
-\item{method}{Character value indicating which optimization routine to perform.
-Choices include \code{Newton}, \code{BFGS}, and \code{CG}. See details for explanation on each method.}
+\item{b}{Numeric scalar indicating the right truncation value. Default is Inf
+indicating no truncation}
 
-\item{...}{Additional arguments from such as \code{max_iter}, \code{step_max}, or \code{epsilon}.
-See details for how to define these additional arguments.}
+\item{data}{Data.frame that contains the outcome and corresponding
+covariates. If none is provided then assumes objects are in user's
+environment.}
+
+\item{method}{Character value indicating which optimization routine to
+perform. Choices include \code{Newton}, \code{BFGS}, and \code{CG}. See
+details for explanation on each method. Default is \code{CG}.}
+
+\item{...}{Additional arguments from such as \code{max_iter},
+\code{step_max}, or \code{epsilon}. See details for how to define these
+additional arguments.}
 }
 \value{
 Returns a list of final estimate of theta, total number of iterations performed, initial log-likelihood,
@@ -39,16 +54,18 @@ This function is used to find estimates from a linear equation
  and the data has subsequently been censored data.
 }
 \details{
-This estimation procedure returns maximum likelihood estimates under the presence
- of \emph{left} truncation and/or \emph{left} censoring. It builds upon currently available methods
+This estimation procedure returns maximum likelihood estimates under the
+ presence of \emph{left}/\emph{right} truncation and/or
+ \emph{left}/\emph{right} censoring. It builds upon currently available methods
  for limited dependent variables by relaxing the assumption of a latent normal distribution
  and instead allows the this underlying distribution to potentially be a
  latent \strong{truncated} normal distribution.
 
- To indicate left censoring the user should specify the parameter \code{v}, and
- to indicate left truncation specify the parameter \code{a}. If specifying
- both left censoring and left truncation note that there is an implicit restriction that
- \eqn{a<\nu}.
+ To indicate left censoring the user should specify the parameter \code{v},
+ to indicate left truncation specify the parameter \code{a}, to specify right
+ right censoring specify \code{xi}, and right truncation the parameter
+ \code{b}. Implicit restrictions on these values exist such that
+ \eqn{a<\nu<\xi<b}.
 
  Below is a brief description of the types of distributions that can be fit
  along with the assumed data generating process for the observed outcome, \eqn{Y}.
@@ -62,20 +79,22 @@ This estimation procedure returns maximum likelihood estimates under the presenc
 
    This is the main model that this package is designed to fit and introduced
    in \insertCite{williams2019modeling}{tcensReg}.It assumes
-   \deqn{Y_{i}^{*}\sim TN(\mu, \sigma^{2}, a)}
-   where TN indicates a left truncated normal random variable, truncated at
-   the value \eqn{a}.
+   \deqn{Y_{i}^{*}\sim TN(\mu, \sigma^{2}, a, b)}
+   where TN indicates a left truncated normal random variable, left truncated
+   at the value \eqn{a} and right truncated at \eqn{b}.
 
    This underlying truncated normal random variable is then \emph{left} censored at the value
    \eqn{\nu} to create the censored observations \eqn{Y} such that
    \deqn{Y_{i}=\nu 1_{\{Y_{i}^{*}\le\nu\}}
    + Y_{i}^{*}
-   1_{\{Y_{i}^{*}>\nu}\}}
+   1_{\{\nu<Y_{i}^{*}<\xi}\}} + \xi 1_{\{Y_{i}^{*}\ge\xi\}}
 
    Required Arguments:
    \itemize{
      \item \code{a}: left truncation value
      \item \code{v}: left censoring value
+     \item \code{xi}: right censoring value
+     \item \code{b}: right truncation value
      }
    }
    \subsection{Normal with Censoring}{
@@ -86,14 +105,16 @@ This estimation procedure returns maximum likelihood estimates under the presenc
    \deqn{Y_{i}^{*}\sim N(\mu, \sigma^{2})}
 
    This underlying normal random variable is then \emph{left} censored at the value
-   \eqn{\nu} to create the censored observations \eqn{Y} such that
+   \eqn{\nu} and or \emph{right} censored at the value \eqn{\xi} to create
+   the censored observations \eqn{Y} such that
    \deqn{Y_{i}=\nu 1_{\{Y_{i}^{*}\le\nu\}}
    + Y_{i}^{*}
-   1_{\{Y_{i}^{*}>\nu}\}}
+   1_{\{\nu<Y_{i}^{*}<\xi}\}} + \xi 1_{\{Y_{i}^{*}\ge\xi\}}
 
    Required Arguments:
    \itemize{
     \item \code{v}: left censoring value
+    \item \code{xi}: right censoring value
    }
 
    This procedure can also be fit using the \code{\link[censReg]{censReg}} package by
@@ -102,17 +123,18 @@ This estimation procedure returns maximum likelihood estimates under the presenc
    \subsection{Truncated Normal}{
 
      This model assumes that there is no censored observations, but that the
-     data are left truncated as originally described by
+     data are left and/or right truncated as originally described by
      \insertCite{hald1949maximum;textual}{tcensReg}.
 
      Therefore, we assume that the observed values follow
-     \deqn{Y_{i}^\sim TN(\mu, \sigma^{2}, a)}
+     \deqn{Y_{i}^\sim TN(\mu, \sigma^{2}, a, b)}
      where TN indicates a left truncated normal random variable, truncated at
      the value \eqn{a}.
 
      Required Arguments:
      \itemize{
       \item \code{a}: left truncation value
+      \item \code{b}: right truncation value
      }
 
      This procedure can also be fit using the \code{\link[truncreg]{truncreg}} package by
@@ -158,7 +180,7 @@ This estimation procedure returns maximum likelihood estimates under the presenc
  }
 }
 \examples{
-#truncated normal underlying data
+#zero left truncated normal underlying data
 y_star <- rtnorm(n = 1000, mu = 0.5, sd = 1, a = 0)
 
 #apply censoring

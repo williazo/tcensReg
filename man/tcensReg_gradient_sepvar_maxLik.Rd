@@ -10,7 +10,9 @@ tcensReg_gradient_sepvar_maxLik(
   X,
   group,
   left_trunc = -Inf,
-  v = NULL
+  v = NULL,
+  xi = NULL,
+  right_trunc = Inf
 )
 }
 \arguments{
@@ -22,9 +24,13 @@ tcensReg_gradient_sepvar_maxLik(
 
 \item{group}{Character vector identifying the group membership for the independent truncated normal variables. This defines the \code{J} groups.}
 
-\item{left_trunc}{Numeric scalar indicating the truncation value}
+\item{left_trunc}{Numeric scalar indicating the left-truncation value}
 
-\item{v}{Numeric scalar indicating the censoring value}
+\item{v}{Numeric scalar indicating the left-censoring value}
+
+\item{xi}{Numeric scalar indicating the right-censoring value}
+
+\item{right_trunc}{Numeric scalar indicating the right-truncation value}
 }
 \value{
 Vector of gradient values with p-1 beta parameters and log sigma for the nth iterate

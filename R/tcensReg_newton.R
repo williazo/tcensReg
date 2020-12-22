@@ -17,9 +17,17 @@
 #' @keywords internal
 
 
-tcensReg_newton<-function(y, X, a = -Inf, v = NULL, epsilon = 1e-4,
-                          tol_val = 1e-6, max_iter = 100, step_max = 10,
-                          theta_init = NULL){
+tcensReg_newton<-function(y,
+                          X,
+                          a = -Inf,
+                          v = NULL,
+                          xi = NULL,
+                          b = Inf,
+                          epsilon = 1e-4,
+                          tol_val = 1e-6,
+                          max_iter = 100,
+                          step_max = 10,
+                          theta_init = NULL) {
 
   #starting the iteration counter at one
   i <- 1

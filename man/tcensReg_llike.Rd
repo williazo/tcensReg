@@ -4,7 +4,7 @@
 \alias{tcensReg_llike}
 \title{Log Likelihood for Truncated Normal Distribution with Censoring with Linear Equation Mean}
 \usage{
-tcensReg_llike(theta, y, X, a = -Inf, v = NULL)
+tcensReg_llike(theta, y, X, a = -Inf, v = NULL, xi = NULL, b = Inf)
 }
 \arguments{
 \item{theta}{Numeric vector containing estimates of \eqn{\beta} and \eqn{\log(\sigma)}}
@@ -13,9 +13,17 @@ tcensReg_llike(theta, y, X, a = -Inf, v = NULL)
 
 \item{X}{Numeric design matrix}
 
-\item{a}{Numeric scalar indicating the truncation value. Initial value is -Inf indicating no truncation}
+\item{a}{Numeric scalar indicating the left truncation value. Default is -Inf
+indicating no truncation}
 
-\item{v}{Numeric scalar indicating the censoring value. Initially set to NULL indicating no censoring}
+\item{v}{Numeric scalar indicating the left censoring value. Default is NULL
+indicating no censoring}
+
+\item{xi}{Numeric scalar indicating the right censoring valye. Default is
+NULL indicating to right censoring}
+
+\item{b}{Numeric scalar indicating the right truncation value. Default is Inf
+indicating no truncation}
 }
 \value{
 Scalar value of the log-likelihood at the nth iterate

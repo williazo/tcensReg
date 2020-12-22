@@ -5,7 +5,13 @@
 #' @importFrom stats dnorm pnorm
 #' @return Vector of gradient values with p-1 beta parameters and log sigma for the nth iterate
 #' @keywords internal
-tcensReg_gradient <- function(theta, y, X, a = -Inf, v = NULL){
+tcensReg_gradient <- function(theta,
+                              y,
+                              X,
+                              a = -Inf,
+                              v = NULL,
+                              xi = NULL,
+                              b = Inf) {
 
   nabla <- vector(length = length(theta)) #creating an empty vector to store the gradient
 

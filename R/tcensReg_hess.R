@@ -6,7 +6,13 @@
 #'
 #' @return Matrix of Hessian values for the nth iterate
 #' @keywords internal
-tcensReg_hess <- function(theta, y, X, a = -Inf, v = NULL){
+tcensReg_hess <- function(theta,
+                          y,
+                          X,
+                          a = -Inf,
+                          v = NULL,
+                          xi = NULL,
+                          b = Inf) {
 
   H <- matrix(nrow = length(theta), ncol = length(theta)) #creating an empty vector to store the gradient
 

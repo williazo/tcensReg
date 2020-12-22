@@ -9,6 +9,8 @@ tcensReg_optim(
   X,
   a = -Inf,
   v = NULL,
+  xi = NULL,
+  b = Inf,
   method,
   epsilon = 1e-04,
   tol_val = 1e-06,
@@ -22,12 +24,21 @@ tcensReg_optim(
 
 \item{X}{Numeric design matrix}
 
-\item{a}{Numeric scalar indicating the truncation value. Initial value is -Inf indicating no truncation}
+\item{a}{Numeric scalar indicating the left truncation value. Default is -Inf
+indicating no truncation}
 
-\item{v}{Numeric scalar indicating the censoring value. Initially set to NULL indicating no censoring}
+\item{v}{Numeric scalar indicating the left censoring value. Default is NULL
+indicating no censoring}
 
-\item{method}{Character value indicating which optimization routine to perform.
-Choices include \code{Newton}, \code{BFGS}, and \code{CG}. See details for explanation on each method.}
+\item{xi}{Numeric scalar indicating the right censoring valye. Default is
+NULL indicating to right censoring}
+
+\item{b}{Numeric scalar indicating the right truncation value. Default is Inf
+indicating no truncation}
+
+\item{method}{Character value indicating which optimization routine to
+perform. Choices include \code{Newton}, \code{BFGS}, and \code{CG}. See
+details for explanation on each method. Default is \code{CG}.}
 
 \item{epsilon}{Numeric value used to define when the algorithm should stop when the gradient is less then epsilon. Default is 0.001}
 

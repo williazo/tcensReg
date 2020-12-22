@@ -4,26 +4,39 @@
 #'  assuming that the underlying distribution is truncated normal
 #'  and the data has subsequently been censored data.
 #'
-#' @param formula Object of class \code{formula} which symbolically describes the model to be fit
-#' @param a Numeric scalar indicating the truncation value. Initial value is -Inf indicating no truncation
-#' @param v Numeric scalar indicating the censoring value. Initially set to NULL indicating no censoring
-#' @param data Data.frame that contains the outcome and corresponding covariates. If none is provided then assumes objects are in user's environment.
-#' @param method Character value indicating which optimization routine to perform.
-#' Choices include \code{Newton}, \code{BFGS}, and \code{CG}. See details for explanation on each method.
-#' @param ... Additional arguments from such as \code{max_iter}, \code{step_max}, or \code{epsilon}.
-#' See details for how to define these additional arguments.
+#' @param formula Object of class \code{formula} which symbolically describes
+#' the model to be fit
+#' @param a Numeric scalar indicating the left truncation value. Default is -Inf
+#' indicating no truncation
+#' @param v Numeric scalar indicating the left censoring value. Default is NULL
+#' indicating no censoring
+#' @param xi Numeric scalar indicating the right censoring valye. Default is
+#' NULL indicating to right censoring
+#' @param b Numeric scalar indicating the right truncation value. Default is Inf
+#' indicating no truncation
+#' @param data Data.frame that contains the outcome and corresponding
+#' covariates. If none is provided then assumes objects are in user's
+#' environment.
+#' @param method Character value indicating which optimization routine to
+#' perform. Choices include \code{Newton}, \code{BFGS}, and \code{CG}. See
+#' details for explanation on each method. Default is \code{CG}.
+#' @param ... Additional arguments from such as \code{max_iter},
+#' \code{step_max}, or \code{epsilon}. See details for how to define these
+#' additional arguments.
 #'
 #' @details
-#'  This estimation procedure returns maximum likelihood estimates under the presence
-#'  of \emph{left} truncation and/or \emph{left} censoring. It builds upon currently available methods
+#'  This estimation procedure returns maximum likelihood estimates under the
+#'  presence of \emph{left}/\emph{right} truncation and/or
+#'  \emph{left}/\emph{right} censoring. It builds upon currently available methods
 #'  for limited dependent variables by relaxing the assumption of a latent normal distribution
 #'  and instead allows the this underlying distribution to potentially be a
 #'  latent \strong{truncated} normal distribution.
 #'
-#'  To indicate left censoring the user should specify the parameter \code{v}, and
-#'  to indicate left truncation specify the parameter \code{a}. If specifying
-#'  both left censoring and left truncation note that there is an implicit restriction that
-#'  \eqn{a<\nu}.
+#'  To indicate left censoring the user should specify the parameter \code{v},
+#'  to indicate left truncation specify the parameter \code{a}, to specify right
+#'  right censoring specify \code{xi}, and right truncation the parameter
+#'  \code{b}. Implicit restrictions on these values exist such that
+#'  \eqn{a<\nu<\xi<b}.
 #'
 #'  Below is a brief description of the types of distributions that can be fit
 #'  along with the assumed data generating process for the observed outcome, \eqn{Y}.
@@ -37,20 +50,22 @@
 #'
 #'    This is the main model that this package is designed to fit and introduced
 #'    in \insertCite{williams2019modeling}{tcensReg}.It assumes
-#'    \deqn{Y_{i}^{*}\sim TN(\mu, \sigma^{2}, a)}
-#'    where TN indicates a left truncated normal random variable, truncated at
-#'    the value \eqn{a}.
+#'    \deqn{Y_{i}^{*}\sim TN(\mu, \sigma^{2}, a, b)}
+#'    where TN indicates a left truncated normal random variable, left truncated
+#'    at the value \eqn{a} and right truncated at \eqn{b}.
 #'
 #'    This underlying truncated normal random variable is then \emph{left} censored at the value
 #'    \eqn{\nu} to create the censored observations \eqn{Y} such that
 #'    \deqn{Y_{i}=\nu 1_{\{Y_{i}^{*}\le\nu\}}
 #'    + Y_{i}^{*}
-#'    1_{\{Y_{i}^{*}>\nu}\}}
+#'    1_{\{\nu<Y_{i}^{*}<\xi}\}} + \xi 1_{\{Y_{i}^{*}\ge\xi\}}
 #'
 #'    Required Arguments:
 #'    \itemize{
 #'      \item \code{a}: left truncation value
 #'      \item \code{v}: left censoring value
+#'      \item \code{xi}: right censoring value
+#'      \item \code{b}: right truncation value
 #'      }
 #'    }
 #'    \subsection{Normal with Censoring}{
@@ -61,14 +76,16 @@
 #'    \deqn{Y_{i}^{*}\sim N(\mu, \sigma^{2})}
 #'
 #'    This underlying normal random variable is then \emph{left} censored at the value
-#'    \eqn{\nu} to create the censored observations \eqn{Y} such that
+#'    \eqn{\nu} and or \emph{right} censored at the value \eqn{\xi} to create
+#'    the censored observations \eqn{Y} such that
 #'    \deqn{Y_{i}=\nu 1_{\{Y_{i}^{*}\le\nu\}}
 #'    + Y_{i}^{*}
-#'    1_{\{Y_{i}^{*}>\nu}\}}
+#'    1_{\{\nu<Y_{i}^{*}<\xi}\}} + \xi 1_{\{Y_{i}^{*}\ge\xi\}}
 #'
 #'    Required Arguments:
 #'    \itemize{
 #'     \item \code{v}: left censoring value
+#'     \item \code{xi}: right censoring value
 #'    }
 #'
 #'    This procedure can also be fit using the \code{\link[censReg]{censReg}} package by
@@ -77,17 +94,18 @@
 #'    \subsection{Truncated Normal}{
 #'
 #'      This model assumes that there is no censored observations, but that the
-#'      data are left truncated as originally described by
+#'      data are left and/or right truncated as originally described by
 #'      \insertCite{hald1949maximum;textual}{tcensReg}.
 #'
 #'      Therefore, we assume that the observed values follow
-#'      \deqn{Y_{i}^\sim TN(\mu, \sigma^{2}, a)}
+#'      \deqn{Y_{i}^\sim TN(\mu, \sigma^{2}, a, b)}
 #'      where TN indicates a left truncated normal random variable, truncated at
 #'      the value \eqn{a}.
 #'
 #'      Required Arguments:
 #'      \itemize{
 #'       \item \code{a}: left truncation value
+#'       \item \code{b}: right truncation value
 #'      }
 #'
 #'      This procedure can also be fit using the \code{\link[truncreg]{truncreg}} package by
@@ -135,7 +153,7 @@
 #' @importFrom stats model.frame model.matrix
 #'
 #' @examples
-#' #truncated normal underlying data
+#' #zero left truncated normal underlying data
 #' y_star <- rtnorm(n = 1000, mu = 0.5, sd = 1, a = 0)
 #'
 #' #apply censoring
@@ -153,13 +171,19 @@
 #' @export
 #' @references
 #'     \insertAllCited{}
-tcensReg <- function(formula, a = -Inf, v = NULL, data = sys.frame(sys.parent()),
-                     method = c("CG", "Newton", "BFGS"), ...){
+tcensReg <- function(formula,
+                     a = -Inf,
+                     v = NULL,
+                     xi = NULL,
+                     b = Inf,
+                     data = sys.frame(sys.parent()),
+                     method = "CG",
+                     ...) {
     #checks for proper specification of formula
-    method <- match.arg(method)
-    if(class(formula) != "formula"){
+    method <- match.arg(method, choices = c("CG", "Newton", "BFGS"))
+    if (class(formula) != "formula") {
         stop("`formula` must be a formula", call. = FALSE)
-        } else if (length(formula) != 3){
+        } else if (length(formula) != 3) {
             stop("`formula` must be 2-sided", call. = FALSE)
         }
 
@@ -170,64 +194,242 @@ tcensReg <- function(formula, a = -Inf, v = NULL, data = sys.frame(sys.parent())
 
     #observed censoring
     n_total <- length(y)
-    n_cens <- sum(y==v)
+    #left-censoring
+    n_cens_L <- sum(y == v)
+    #right-censoring
+    n_cens_R <- sum(y == xi)
 
-    #checking for proper specification of a and v
-    if(!is.null(v) & (!is.numeric(a) | !is.numeric(v))){
-        stop("`a` and `v` must both be numeric", call. = FALSE)
-        } else if(!is.null(v) & (length(a) !=1 | length(v) != 1)){
-            stop("`a`, and `v` must both be scalars", call. = FALSE)
-            }
+
     # checking model specification of truncation and censoring params
-    if(is.null(v) & a == -Inf){
-        warning("`v` and `a` are not specified indicating no censoring and no truncation", call. = FALSE)
-        } else if(is.null(v) & a != -Inf){
-            if(any(y < a)){
-                stop("observed values below specified truncation `a`", call.=FALSE)
-            }
-            warning("`v`is not specified indicating no censoring", call. = FALSE)
-            } else if(!is.null(v) & a == -Inf){
-                len_cens <- sum(y == v, na.rm=TRUE)
-                if(len_cens == 0){
-                    stop("censoring indicated but no observed censored values",
-                         call.=FALSE)
-                    }
-                warning("`a` is not specified indicating no truncation", call. = FALSE)
-                } else {
-                    if(v < a) stop("censoring specified below truncation", call.=FALSE)
-                    if(any(y < a)){
-                        stop("observed values below specified truncation `a`", call.=FALSE)
-                    }
-                    len_cens <- sum(y == v, na.rm = TRUE)
-                    if(len_cens == 0){
-                        stop("censoring indicated but no observed censored values",
-                             call.=FALSE)
-                    }
-                }
+    cens_trunc_param_check(y = y, a = a, v = v, xi = xi, b = b)
 
     #reading in the newton raphson for the truncated censored normal
-    if(method == "Newton"){
-        results <- tcensReg_newton(y, X, a, v, ...)
-    } else if(method %in%c("BFGS", "CG")){
-        results <- tcensReg_optim(y, X, a, v, method, ...)
+    if (method == "Newton") {
+        results <- tcensReg_newton(y, X, a, v, xi, b, ...)
+    } else if (method %in% c("BFGS", "CG")) {
+        results <- tcensReg_optim(y, X, a, v, xi, b, method, ...)
     }
 
     #adding in information criterion into the results
     aic <- (2 * length(results$theta)) - (2 * results$final_ll)
     bic <- log(length(y)) * length(results$theta) - 2 * results$final_ll
-    info_criteria <- c(AIC=aic, BIC=bic)
+    info_criteria <- c(AIC = aic, BIC = bic)
     results[["info_criteria"]] <- info_criteria
 
     #additional information to save in order to use S3 methods
     results$model_matrix <- X
     results$call <- match.call()
-    results$n_count <- list(n=n_total, n_cens=n_cens)
-    latent_assumption <- ifelse(is.null(v) & a == -Inf, "Normal",
-                                ifelse(is.null(v) & a != -Inf, "Truncated Normal",
-                                       ifelse(!is.null(v) & a == -Inf, "Normal with Censoring",
-                                              ifelse(!is.null(v) & a != -Inf, "Truncated Normal with Censoring"))))
+    results$n_count <- list(
+        n = n_total,
+        n_cens = sum(n_cens_L, n_cens_R),
+        n_cens_L = n_cens_L,
+        n_cens_R = n_cens_R
+        )
+    latent_assumption <- ifelse(
+        is.null(v) & a == -Inf & is.null(xi) & b == Inf,
+        "Normal",
+        ifelse(
+            is.null(v) & is.null(xi) & (a != -Inf | b != Inf),
+            "Truncated Normal",
+            ifelse(
+                (!is.null(v) | !is.null(xi)) & a == -Inf & b == Inf,
+                "Normal with Censoring",
+                ifelse(
+                    (!is.null(v) & (a != -Inf | b != Inf))
+                    | (!is.null(xi) & (a != -Inf | b != Inf)),
+                    "Truncated Normal with Censoring",
+                    NA
+                    )
+                )
+            )
+        )
     results$latent_assumption <- latent_assumption
     #saving object as S3
     class(results) <- "tcensReg"
     return(results)
+}
+
+#' Checking the censored and truncation values
+#'
+#' @description Internal helper function to perform basic parameter checks
+#'
+#' @param y Observed outcome
+#' @param a Left-truncation value
+#' @param v Left-censoring value
+#' @param xi Right-censoring value
+#' @param b Right-truncation value
+#'
+#' @keywords internal
+cens_trunc_param_check <- function(y,
+                                   a,
+                                   v,
+                                   xi,
+                                   b) {
+
+    #identify type of censoring
+    if (all(is.null(v), is.null(xi))) {
+        any_cens <- FALSE
+        n_cens_L <- 0
+        n_cens_R <- 0
+        left_cens <- FALSE
+        right_cens <- FALSE
+    } else {
+        any_cens <- TRUE
+        left_cens <- ifelse(!is.null(v), TRUE, FALSE)
+        if (left_cens) {
+            if (length(v) != 1 | !is.numeric(v)) {
+                stop(
+                    "Left censoring value must be numeric scalar",
+                    call. = FALSE
+                    )
+            }
+        }
+        n_cens_L <- sum(y == v, na.rm = TRUE)
+        if (n_cens_L == 0 & left_cens) {
+            stop(
+                "Left censoring specified but no censored observations",
+                call. = FALSE
+                )
+        }
+        right_cens <- ifelse(!is.null(xi), TRUE, FALSE)
+        if (right_cens) {
+            if (length(xi) != 1 | !is.numeric(xi)) {
+                stop(
+                    "Right censoring value must be numeric scalar",
+                     call. = FALSE
+                     )
+            }
+        }
+        n_cens_R <- sum(y == xi, na.rm = TRUE)
+        if (n_cens_R == 0 & right_cens) {
+            stop(
+                "Right censoring specified but no censored observations",
+                call. = FALSE
+                )
+        }
+        if (left_cens & right_cens) {
+            if (v >= xi) {
+                stop(
+                    "Left censoring greater than or equal to right censoring",
+                    call. = FALSE
+                    )
+                }
+        }
+    }
+
+    #identify type of truncation
+    if (all(a == -Inf, b == Inf)) {
+        any_trunc <- FALSE
+        left_trunc <- FALSE
+        right_trunc <- FALSE
+    } else {
+        any_trunc <- TRUE
+        if (length(a) != 1 | !is.numeric(a)) {
+            stop("Left truncation value must be numeric scalar", call. = FALSE)
+        }
+        if (length(b) != 1 | !is.numeric(b)) {
+            stop("Right truncation value must be numeric scalar", call. = FALSE)
+        }
+        left_trunc <- ifelse(a != -Inf, TRUE, FALSE)
+        right_trunc <- ifelse(b != Inf, TRUE, FALSE)
+        if (left_trunc & right_trunc & (a >= b)) {
+            stop(
+                "Left truncation greater than or equal to right truncation",
+                call. = FALSE
+                )
+        }
+    }
+
+    #identify combination of censoring and truncation
+    if (all(!any_cens, !any_trunc)) {
+        message("No censoring and no truncation")
+    } else if (left_trunc & right_trunc) {
+        #truncation on both sides
+        if (any(y < a, y > b)) {
+            stop("Observed values outside truncation value", call. = FALSE)
+        }
+        if (left_cens & right_cens) {
+            if ((a >= v) | (xi >= b)) {
+                stop(
+                    "Censoring specified after truncation values",
+                    call. = FALSE
+                    )
+                }
+            message("Left/right censoring with left/right truncation")
+            } else if (left_cens & !right_cens) {
+            if (a >= v) {
+                stop("Censoring specified below left truncation", call. = FALSE)
+            }
+            message("Left censoring with left/right truncation")
+            } else if (!left_cens & right_cens) {
+            if (xi > b) {
+                stop(
+                    "Censoring specified above right truncation",
+                    call. = FALSE
+                    )
+            }
+            message("Right censoring with left/right truncation")
+        } else {
+            message("No censoring with left/right truncation")
+        }
+    } else if (left_trunc & !right_trunc) {
+        if (any(y < a)) {
+            stop("Observed values below left truncation value", call. = FALSE)
+            }
+        if (left_cens & right_cens) {
+            if ((a >= v) | (a >= xi)) {
+                stop("Censoring specified below/equal to left truncation", call. = FALSE)
+            }
+            message("Left/right censoring with left truncation")
+        } else if (left_cens & !right_cens) {
+            if (a >= v) {
+                stop("Censoring specified below/equal to left truncation", call. = FALSE)
+            }
+            message("Left censoring with left truncation")
+        } else if (!left_cens & right_cens) {
+            if (a >= xi) {
+                stop("Censoring specified below/equal to left truncation", call. = FALSE)
+            }
+            #unnatural condition
+            warning("Right censoring with left truncation", call. = FALSE)
+        } else {
+            message("No censoring with left truncation")
+        }
+    } else if (!left_trunc & right_trunc) {
+        if (any(y > b)) {
+            stop("Observed values above right truncation value", call. = FALSE)
+            }
+        if (left_cens & right_cens) {
+            if ((xi >= b) | (v >= b)) {
+                stop("Censoring specified above/equal to right truncation", call. = FALSE)
+            }
+            message("Left/right censoring with right truncation")
+        } else if (left_cens & !right_cens) {
+            if (v >= b) {
+                stop(
+                    "Censoring specified above/equal to right truncation",
+                     call. = FALSE
+                    )
+            }
+            #unnatural condition
+            warning("Left censoring with right truncation", call. = FALSE)
+        } else if (!left_cens & right_cens) {
+            if (xi >= b) {
+                stop("Censoring specified above/equal to right truncation", call. = FALSE)
+            }
+            message("Right censoring with right truncation")
+        } else {
+            message("No censoring with right truncation")
+        }
+    } else {
+        if (left_cens & right_cens) {
+            message("Left/right censoring with no truncation")
+        } else if (left_cens & !right_cens) {
+            message("Left censoring with no truncation")
+        } else if (!left_cens & right_cens) {
+            message("Right censoring with no truncation")
+        } else {
+            message("No censoring with no truncation")
+            }
+        }
 }

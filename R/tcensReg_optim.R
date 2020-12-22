@@ -14,9 +14,18 @@
 #' @keywords internal
 
 
-tcensReg_optim<-function(y, X, a = -Inf, v = NULL, method, epsilon = 1e-4,
-                          tol_val = 1e-6, max_iter = 100, step_max = 10,
-                          theta_init = NULL){
+tcensReg_optim<-function(y,
+                         X,
+                         a = -Inf,
+                         v = NULL,
+                         xi = NULL,
+                         b = Inf,
+                         method,
+                         epsilon = 1e-4,
+                         tol_val = 1e-6,
+                         max_iter = 100,
+                         step_max = 10,
+                         theta_init = NULL) {
 
     #want to use different inital estimates depending on whether it is truncation only, censor only, or truncated and censored
     #if censored only, normal, or truncated only then use estimates from OLS

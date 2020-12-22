@@ -4,7 +4,16 @@
 \alias{tcensReg_llike_sepvar_maxLik}
 \title{Log Likelihood for Model for J independent Truncated Normal Variables with Same Mean Structure but Different Variance}
 \usage{
-tcensReg_llike_sepvar_maxLik(theta, y, X, group, left_trunc = -Inf, v = NULL)
+tcensReg_llike_sepvar_maxLik(
+  theta,
+  y,
+  X,
+  group,
+  left_trunc = -Inf,
+  v = NULL,
+  xi = NULL,
+  b = Inf
+)
 }
 \arguments{
 \item{theta}{Numeric vector containing the values at the present iterate for the (p-1) fixed mean parameters and the J log sigma values}
@@ -15,9 +24,13 @@ tcensReg_llike_sepvar_maxLik(theta, y, X, group, left_trunc = -Inf, v = NULL)
 
 \item{group}{Factor variable used to define the J groups}
 
-\item{left_trunc}{Numeric scalar defining the common truncation value for each Truncated Normal}
+\item{left_trunc}{Numeric scalar defining the common left-truncation value for each Truncated Normal}
 
-\item{v}{Numeric scalar defining the common censoring value}
+\item{v}{Numeric scalar defining the common left-censoring value}
+
+\item{xi}{Numeric scalar defining the common right-censoring value}
+
+\item{right_trunc}{Numeric scalar defining the common right-truncation value for each Truncated Normal}
 }
 \value{
 Scalar value of the log-likelihood at the nth-iterate

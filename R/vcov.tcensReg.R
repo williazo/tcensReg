@@ -23,7 +23,9 @@
 #' @return Numeric matrix of variance covarince values
 #' @export
 #' @keywords internal
-vcov.tcensReg <- function(object, logsigma=FALSE, ...){
+vcov.tcensReg <- function(object,
+                          logsigma=FALSE,
+                          ...) {
     vcov_result <- object$var_cov
     dimnames(vcov_result) <- dimnames(object$var_cov)
     if(logsigma==FALSE){

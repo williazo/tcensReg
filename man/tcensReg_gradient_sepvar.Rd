@@ -4,7 +4,16 @@
 \alias{tcensReg_gradient_sepvar}
 \title{Analytic Gradient Vector for J Independent Truncated Normal Random Variables with Separate Variance}
 \usage{
-tcensReg_gradient_sepvar(theta, y, X, group, a = -Inf, v = NULL)
+tcensReg_gradient_sepvar(
+  theta,
+  y,
+  X,
+  group,
+  a = -Inf,
+  v = NULL,
+  xi = NULL,
+  b = Inf
+)
 }
 \arguments{
 \item{theta}{Numeric vector numeric vector containing estimates of beta and log sigma}
@@ -15,9 +24,13 @@ tcensReg_gradient_sepvar(theta, y, X, group, a = -Inf, v = NULL)
 
 \item{group}{Character vector identifying the group membership for the independent truncated normal variables. This defines the \code{J} groups.}
 
-\item{a}{Numeric scalar indicating the truncation value}
+\item{a}{Numeric scalar indicating the left-truncation value}
 
-\item{v}{Numeric scalar indicating the censoring value}
+\item{v}{Numeric scalar indicating the left-censoring value}
+
+\item{xi}{Numeric scalar indicating the right-censoring value}
+
+\item{b}{Numeric scalar indicating the right-truncation value}
 }
 \value{
 Vector of gradient values with p-1 beta parameters and log sigma for the nth iterate

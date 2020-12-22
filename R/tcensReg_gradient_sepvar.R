@@ -1,8 +1,10 @@
 #' Analytic Gradient Vector for J Independent Truncated Normal Random Variables with Separate Variance
 #'
 #' @param theta Numeric vector numeric vector containing estimates of beta and log sigma
-#' @param a Numeric scalar indicating the truncation value
-#' @param v Numeric scalar indicating the censoring value
+#' @param a Numeric scalar indicating the left-truncation value
+#' @param v Numeric scalar indicating the left-censoring value
+#' @param xi Numeric scalar indicating the right-censoring value
+#' @param b Numeric scalar indicating the right-truncation value
 #' @param y Numeric vector with the observed truncated and censored outcomes
 #' @param X Numeric design matrix
 #' @param group Character vector identifying the group membership for the independent truncated normal variables. This defines the \code{J} groups.
@@ -12,7 +14,14 @@
 #' @return Vector of gradient values with p-1 beta parameters and log sigma for the nth iterate
 #' @keywords internal
 
-tcensReg_gradient_sepvar <- function(theta, y, X, group, a = -Inf, v = NULL){
+tcensReg_gradient_sepvar <- function(theta,
+                                     y,
+                                     X,
+                                     group,
+                                     a = -Inf,
+                                     v = NULL,
+                                     xi = NULL,
+                                     b = Inf) {
 
   nabla <- vector(length = length(theta)) #creating an empty vector to store the gradient
 
